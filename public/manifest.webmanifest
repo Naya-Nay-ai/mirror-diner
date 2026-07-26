@@ -1,0 +1,18 @@
+{
+  "name": "MIRROR DINER",
+  "short_name": "DINER",
+  "description": "深夜のレトロダイナーで注文をさばく、タイムマネジメントゲーム。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a151f",
+  "theme_color": "#0a151f",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
