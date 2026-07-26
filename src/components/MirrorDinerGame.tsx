@@ -2257,20 +2257,22 @@ export default function MirrorDinerGame() {
                 </button>
               ))}
             </div>
-            <button
-              className="training-button"
-              onClick={startTraining}
-            >
-              <span className="training-button-pair" aria-hidden="true">
-                <img src="/customers/shu.svg" alt="" />
-                <img src="/customers/miu.svg" alt="" />
-              </span>
-              <span>
-                <small>TRAINING</small>
-                新人研修
-              </span>
-            </button>
-            <p className="difficulty-description">{difficultyData.description}</p>
+            <div className="title-support-row">
+              <p className="difficulty-description">{difficultyData.description}</p>
+              <button
+                className="training-button"
+                onClick={startTraining}
+              >
+                <span className="training-button-pair" aria-hidden="true">
+                  <img src="/customers/shu.svg" alt="" />
+                  <img src="/customers/miu.svg" alt="" />
+                </span>
+                <span>
+                  <small>TRAINING</small>
+                  新人研修
+                </span>
+              </button>
+            </div>
             {difficulty === "extra" && (
               <div className="mission-selector" aria-label="EXTRAミッション">
                 {(Object.keys(MISSIONS) as MissionId[]).map((id) => {
