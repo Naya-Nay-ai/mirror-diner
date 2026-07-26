@@ -105,9 +105,27 @@ type SaveData = {
   supplies: StaffSupplies;
   selectedMission: MissionId;
   seenRecipes: MenuId[];
+  supplyGuidesSeen: Partial<Record<SupplyGuideDifficulty, boolean>>;
+  workshopGuideSeen: boolean;
 };
 type StaffSupplyId = "timeCard" | "smile" | "serviceOvertime";
 type StaffSupplies = Record<StaffSupplyId, number>;
+type SupplyGuideDifficulty = Exclude<DifficultyId, "easy">;
+type FirstTimeGuide =
+  | {
+      kind: "supplies";
+      difficulty: SupplyGuideDifficulty;
+      index: number;
+    }
+  | {
+      kind: "workshop";
+      index: number;
+    };
+type GuideCard = {
+  speaker: "shu" | "miu";
+  phase: string;
+  text: string;
+};
 type MissionId = "happyGuests" | "perfectRun" | "comboRush" | "bigService";
 type MissionData = {
   en: string;
@@ -151,6 +169,106 @@ const DEFAULT_SUPPLIES: StaffSupplies = {
   smile: 0,
   serviceOvertime: 0,
 };
+const SUPPLY_GUIDES: Record<
+  SupplyGuideDifficulty,
+  {
+    gift: Partial<StaffSupplies>;
+    cards: readonly GuideCard[];
+  }
+> = {
+  normal: {
+    gift: { timeCard: 1, smile: 1 },
+    cards: [
+      {
+        speaker: "shu",
+        phase: "NORMAL SHIFT GIFT",
+        text: "しゅとみうから さしいれだよ〜",
+      },
+      {
+        speaker: "shu",
+        phase: "BREAK CARD",
+        text: "「きゅうけい」を おすと、とけいも おりょうりも いったん とまるよ",
+      },
+      {
+        speaker: "miu",
+        phase: "SMILE",
+        text: "「すまいる」を おしたら、まってる おきゃくさまを えらんでねっ！",
+      },
+      {
+        speaker: "shu",
+        phase: "SMILE",
+        text: "まちじかんが 8びょう もどるよ。あぶないときに つかってみよう",
+      },
+    ],
+  },
+  hard: {
+    gift: { timeCard: 1, smile: 1 },
+    cards: [
+      {
+        speaker: "miu",
+        phase: "HARD SHIFT GIFT",
+        text: "しんやらっしゅの さしいれだよ〜！",
+      },
+      {
+        speaker: "shu",
+        phase: "BREAK CARD",
+        text: "きゅうけいは、とけいも おりょうりも いったん とめられるよ",
+      },
+      {
+        speaker: "miu",
+        phase: "SMILE",
+        text: "すまいるは、おきゃくさまの まちじかんを 8びょう もどせるよっ",
+      },
+      {
+        speaker: "shu",
+        phase: "STAFF KIT",
+        text: "ひとつずつ ほじゅうしたよ。いそがしいときに つかってね",
+      },
+    ],
+  },
+  extra: {
+    gift: { serviceOvertime: 1 },
+    cards: [
+      {
+        speaker: "miu",
+        phase: "EXTRA SHIFT GIFT",
+        text: "とくべつえいぎょうの さしいれだよ〜！",
+      },
+      {
+        speaker: "miu",
+        phase: "OVERTIME",
+        text: "もうちょっとだけ がんばりたいときに つかってね!!",
+      },
+      {
+        speaker: "shu",
+        phase: "OVERTIME",
+        text: "えいぎょうじかんが 30びょう のびるよ。ひとばんに 1かいだけ つかえるよ",
+      },
+    ],
+  },
+};
+const WORKSHOP_GUIDE: readonly GuideCard[] = [
+  {
+    speaker: "shu",
+    phase: "KITCHEN WORKS",
+    text: "ここでは ためたTIPで、ちゅうぼうの せつびを つよくできるよ",
+  },
+  {
+    speaker: "miu",
+    phase: "KITCHEN WORKS",
+    text: "いちどに やけるかずや、りょうりを おけるかずが ふえるよ〜！",
+  },
+  {
+    speaker: "shu",
+    phase: "KITCHEN WORKS",
+    text: "どりんくを はやくしたり、ふらいやーを ふやすことも できるよ",
+  },
+  {
+    speaker: "miu",
+    phase: "KITCHEN WORKS",
+    text: "こまったところから かいそうしてねっ。きょうは みるだけでも だいじょうぶ！",
+  },
+];
 const SMILE_RECOVERY_MS = 8000;
 const MISSIONS: Record<MissionId, MissionData> = {
   happyGuests: {
@@ -725,6 +843,12 @@ export default function MirrorDinerGame() {
   const [tips, setTips] = useState(0);
   const [upgrades, setUpgrades] = useState<Upgrades>(DEFAULT_UPGRADES);
   const [supplies, setSupplies] = useState<StaffSupplies>(DEFAULT_SUPPLIES);
+  const [supplyGuidesSeen, setSupplyGuidesSeen] = useState<
+    Partial<Record<SupplyGuideDifficulty, boolean>>
+  >({});
+  const [workshopGuideSeen, setWorkshopGuideSeen] = useState(false);
+  const [firstTimeGuide, setFirstTimeGuide] =
+    useState<FirstTimeGuide | null>(null);
   const [selectedMission, setSelectedMission] =
     useState<MissionId>(DEFAULT_MISSION);
   const [seenRecipes, setSeenRecipes] = useState<MenuId[]>([]);
@@ -756,6 +880,9 @@ export default function MirrorDinerGame() {
   const [paused, setPaused] = useState(false);
   const [smileMode, setSmileMode] = useState(false);
   const [usedServiceOvertime, setUsedServiceOvertime] = useState(false);
+  const supplyGuidesSeenRef = useRef<
+    Partial<Record<SupplyGuideDifficulty, boolean>>
+  >({});
   const startAtRef = useRef(0);
   const shiftDurationRef = useRef(GAME_SECONDS);
   const nextOrderAtRef = useRef(0);
@@ -845,6 +972,16 @@ export default function MirrorDinerGame() {
               ),
             });
           }
+          if (saved.supplyGuidesSeen) {
+            const loadedSupplyGuides = {
+              normal: Boolean(saved.supplyGuidesSeen.normal),
+              hard: Boolean(saved.supplyGuidesSeen.hard),
+              extra: Boolean(saved.supplyGuidesSeen.extra),
+            };
+            supplyGuidesSeenRef.current = loadedSupplyGuides;
+            setSupplyGuidesSeen(loadedSupplyGuides);
+          }
+          setWorkshopGuideSeen(Boolean(saved.workshopGuideSeen));
         }
       } catch {
         window.localStorage.removeItem(SAVE_KEY);
@@ -866,6 +1003,8 @@ export default function MirrorDinerGame() {
         supplies,
         selectedMission,
         seenRecipes,
+        supplyGuidesSeen,
+        workshopGuideSeen,
       } satisfies SaveData),
     );
   }, [
@@ -874,8 +1013,10 @@ export default function MirrorDinerGame() {
     seenRecipes,
     selectedMission,
     supplies,
+    supplyGuidesSeen,
     tips,
     upgrades,
+    workshopGuideSeen,
   ]);
 
   useEffect(() => {
@@ -1021,6 +1162,34 @@ export default function MirrorDinerGame() {
     setTrainingStep(null);
     recipePausedAtRef.current = 0;
     normalFeaturedIndexRef.current = 0;
+    if (difficulty !== "easy" && !supplyGuidesSeenRef.current[difficulty]) {
+      const guide = SUPPLY_GUIDES[difficulty];
+      supplyGuidesSeenRef.current = {
+        ...supplyGuidesSeenRef.current,
+        [difficulty]: true,
+      };
+      setSupplies((current) => ({
+        timeCard: Math.min(
+          STAFF_SUPPLY_MAX,
+          current.timeCard + (guide.gift.timeCard ?? 0),
+        ),
+        smile: Math.min(
+          STAFF_SUPPLY_MAX,
+          current.smile + (guide.gift.smile ?? 0),
+        ),
+        serviceOvertime: Math.min(
+          STAFF_SUPPLY_MAX,
+          current.serviceOvertime + (guide.gift.serviceOvertime ?? 0),
+        ),
+      }));
+      setSupplyGuidesSeen((current) => ({
+        ...current,
+        [difficulty]: true,
+      }));
+      setFirstTimeGuide({ kind: "supplies", difficulty, index: 0 });
+    } else {
+      setFirstTimeGuide(null);
+    }
     setTutorial(true);
     setScreen("game");
   }, [difficulty, seenRecipes]);
@@ -1825,6 +1994,29 @@ export default function MirrorDinerGame() {
     setSupplies((current) => ({ ...current, [key]: current[key] + 1 }));
   };
 
+  const openWorkshop = () => {
+    setWorkshop(true);
+    if (workshopGuideSeen) return;
+    setWorkshopGuideSeen(true);
+    setFirstTimeGuide({ kind: "workshop", index: 0 });
+  };
+
+  const advanceFirstTimeGuide = () => {
+    if (!firstTimeGuide) return;
+    const cards =
+      firstTimeGuide.kind === "supplies"
+        ? SUPPLY_GUIDES[firstTimeGuide.difficulty].cards
+        : WORKSHOP_GUIDE;
+    if (firstTimeGuide.index >= cards.length - 1) {
+      setFirstTimeGuide(null);
+      return;
+    }
+    setFirstTimeGuide({
+      ...firstTimeGuide,
+      index: firstTimeGuide.index + 1,
+    });
+  };
+
   const useServiceOvertime = () => {
     if (
       (difficulty !== "hard" && difficulty !== "extra") ||
@@ -2105,7 +2297,7 @@ export default function MirrorDinerGame() {
           <div className="title-utility">
             <button
               className="workshop-button"
-              onClick={() => setWorkshop(true)}
+              onClick={openWorkshop}
             >
               <span className="power-tool-icon" aria-hidden="true">
                 <i className="power-tool-bit" />
@@ -2233,6 +2425,31 @@ export default function MirrorDinerGame() {
             </section>
           </div>
         )}
+        {firstTimeGuide && firstTimeGuide.kind === "workshop" && (() => {
+          const card = WORKSHOP_GUIDE[firstTimeGuide.index];
+          const isLast = firstTimeGuide.index === WORKSHOP_GUIDE.length - 1;
+          return (
+            <div className="first-guide-overlay" role="dialog" aria-modal="true">
+              <section className={`first-guide-card guide-${card.speaker}`}>
+                <div className="first-guide-portrait" aria-hidden="true">
+                  <img
+                    src={`/customers/${card.speaker}.svg`}
+                    alt=""
+                    draggable={false}
+                  />
+                </div>
+                <div className="first-guide-copy">
+                  <small>{card.phase}</small>
+                  <strong>{card.speaker === "shu" ? "しゅ" : "みう"}</strong>
+                  <p>{card.text}</p>
+                </div>
+                <button onClick={advanceFirstTimeGuide}>
+                  {isLast ? "わかった！ みてみる" : "つぎへ"}
+                </button>
+              </section>
+            </div>
+          );
+        })()}
       </main>
     );
   }
@@ -2289,7 +2506,7 @@ export default function MirrorDinerGame() {
           <button onClick={startGame}>もう一度営業する</button>
           <button onClick={() => {
             setScreen("title");
-            setWorkshop(true);
+            openWorkshop();
           }}>
             厨房を改装する
           </button>
@@ -3104,6 +3321,43 @@ export default function MirrorDinerGame() {
           </section>
         </div>
       )}
+      {firstTimeGuide && firstTimeGuide.kind === "supplies" && (() => {
+        const guide = SUPPLY_GUIDES[firstTimeGuide.difficulty];
+        const card = guide.cards[firstTimeGuide.index];
+        const isLast = firstTimeGuide.index === guide.cards.length - 1;
+        return (
+          <div className="first-guide-overlay" role="dialog" aria-modal="true">
+            <section className={`first-guide-card guide-${card.speaker}`}>
+              <div className="first-guide-portrait" aria-hidden="true">
+                <img
+                  src={`/customers/${card.speaker}.svg`}
+                  alt=""
+                  draggable={false}
+                />
+              </div>
+              <div className="first-guide-copy">
+                <small>{card.phase}</small>
+                <strong>{card.speaker === "shu" ? "しゅ" : "みう"}</strong>
+                <p>{card.text}</p>
+                {firstTimeGuide.index === 0 && (
+                  <div className="guide-gifts" aria-label="もらったスタッフ用品">
+                    {guide.gift.timeCard && (
+                      <span><i className="clock-face" />タイムカード ×1</span>
+                    )}
+                    {guide.gift.smile && <span><i>☺</i>スマイル ×1</span>}
+                    {guide.gift.serviceOvertime && (
+                      <span><i>+30</i>サービス残業 ×1</span>
+                    )}
+                  </div>
+                )}
+              </div>
+              <button onClick={advanceFirstTimeGuide}>
+                {isLast ? "ありがとう！" : "つぎへ"}
+              </button>
+            </section>
+          </div>
+        );
+      })()}
       {paused && (
         <div className="pause-overlay" role="dialog" aria-modal="true">
           <section className="pause-card">

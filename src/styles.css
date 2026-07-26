@@ -303,6 +303,177 @@
   }
 }
 
+/* ---------- FIRST-TIME GUIDES ---------- */
+
+.first-guide-overlay {
+  position: fixed;
+  z-index: 130;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(7, 13, 18, 0.76);
+  color: #3d3028;
+  text-shadow: none;
+}
+
+.first-guide-card {
+  position: relative;
+  display: grid;
+  width: min(440px, calc(100vw - 28px));
+  min-height: 150px;
+  grid-template-columns: 104px minmax(0, 1fr);
+  align-items: center;
+  padding: 14px 16px 12px 10px;
+  border: 4px solid #6c5238;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 24px,
+      rgba(91, 113, 123, 0.13) 25px
+    ),
+    #fff0c8;
+  box-shadow:
+    7px 8px 0 rgba(0, 0, 0, 0.4),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.42);
+  transform: rotate(-0.35deg);
+}
+
+.first-guide-card::before {
+  content: "";
+  position: absolute;
+  left: 28px;
+  top: -12px;
+  width: 82px;
+  height: 22px;
+  background: rgba(212, 184, 106, 0.86);
+  transform: rotate(-2deg);
+}
+
+.first-guide-card.guide-miu {
+  border-color: #8c4d60;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 24px,
+      rgba(139, 76, 95, 0.12) 25px
+    ),
+    #fff0d3;
+}
+
+.first-guide-portrait {
+  position: relative;
+  align-self: stretch;
+  min-height: 112px;
+  overflow: hidden;
+  border-right: 2px dashed rgba(90, 68, 48, 0.42);
+}
+
+.first-guide-portrait img {
+  position: absolute;
+  left: 50%;
+  bottom: -64px;
+  width: 116px;
+  height: 188px;
+  object-fit: contain;
+  image-rendering: auto;
+  transform: translateX(-50%);
+}
+
+.first-guide-copy {
+  min-width: 0;
+  padding: 3px 4px 3px 14px;
+}
+
+.first-guide-copy small,
+.first-guide-copy strong,
+.first-guide-copy p {
+  display: block;
+}
+
+.first-guide-copy small {
+  color: #7b3740;
+  font-family: ui-monospace, "Courier New", monospace;
+  font-size: 0.53rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.guide-shu .first-guide-copy strong {
+  color: #2f6d5d;
+}
+
+.guide-miu .first-guide-copy strong {
+  color: #a14260;
+}
+
+.first-guide-copy strong {
+  margin-top: 3px;
+  font-size: 0.7rem;
+}
+
+.first-guide-copy p {
+  margin: 5px 0 0;
+  font-size: 0.86rem;
+  font-weight: 900;
+  line-height: 1.5;
+}
+
+.guide-gifts {
+  display: grid;
+  gap: 4px;
+  margin-top: 9px;
+}
+
+.guide-gifts span {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 7px;
+  border: 2px solid #7a5d43;
+  background: rgba(255, 248, 218, 0.78);
+  color: #52382c;
+  font-size: 0.63rem;
+  font-weight: 900;
+}
+
+.guide-gifts i {
+  display: grid;
+  width: 25px;
+  height: 22px;
+  flex: 0 0 25px;
+  place-items: center;
+  border: 2px solid #5b4334;
+  background: #f0c856;
+  color: #642934;
+  font-family: ui-monospace, monospace;
+  font-size: 0.58rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.guide-gifts .clock-face {
+  width: 20px;
+  height: 20px;
+  margin: 0 3px;
+  border-width: 2px;
+  background: #f5e8bf;
+}
+
+.first-guide-card > button {
+  grid-column: 1 / -1;
+  min-height: 38px;
+  margin: 9px 2px 0 104px;
+  border: 2px solid #553b2c;
+  background: #8b2f3b;
+  color: #fff1c9;
+  box-shadow: inset 2px 2px #bd6870, inset -2px -2px #541923;
+  font-size: 0.68rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
 @media (max-width: 640px), (max-aspect-ratio: 4 / 5) {
   .title-control-deck .training-button {
     width: 100%;
@@ -363,6 +534,39 @@
 
   .training-next {
     margin-left: 70px;
+  }
+
+  .first-guide-overlay {
+    padding: 10px;
+  }
+
+  .first-guide-card {
+    width: min(420px, calc(100vw - 20px));
+    min-height: 128px;
+    grid-template-columns: 82px minmax(0, 1fr);
+    padding: 10px 10px 9px 7px;
+  }
+
+  .first-guide-portrait {
+    min-height: 96px;
+  }
+
+  .first-guide-portrait img {
+    bottom: -55px;
+    width: 96px;
+    height: 158px;
+  }
+
+  .first-guide-copy {
+    padding-left: 10px;
+  }
+
+  .first-guide-copy p {
+    font-size: clamp(0.7rem, 3.3vw, 0.82rem);
+  }
+
+  .first-guide-card > button {
+    margin-left: 82px;
   }
 }
 
