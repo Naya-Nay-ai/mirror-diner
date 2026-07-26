@@ -5871,3 +5871,50 @@ button:focus-visible {
     height: calc(100svh - 98px - env(safe-area-inset-top));
   }
 }
+
+/* ---------- MOBILE SHIFT VISIBILITY ----------
+   Keep customers and both prep areas visible in the phone cockpit without
+   changing the desktop layout. */
+
+@media (max-width: 640px), (max-aspect-ratio: 4 / 5) {
+  .service-panel .customer-sprite {
+    bottom: -78px;
+    height: 180px;
+    max-width: 134px;
+  }
+
+  .service-panel .customer-small .customer-sprite {
+    bottom: -54px;
+    height: 156px;
+    max-width: 118px;
+  }
+
+  .kitchen .prep-row {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.45fr);
+  }
+
+  .kitchen .assembly-bench,
+  .kitchen .stock-bin {
+    min-width: 0;
+  }
+
+  /* Four griddle choices get too narrow for Japanese labels on phones.
+     Keep the full-size tap targets and identify each action by its food icon. */
+  .kitchen .griddle .station-controls .metal-switch > span:last-child {
+    display: none;
+  }
+
+  .kitchen .griddle .station-controls .metal-switch {
+    min-height: 35px;
+    padding: 4px;
+  }
+
+  .kitchen .griddle .station-controls .food-icon.is-small {
+    width: 26px;
+    height: 23px;
+  }
+
+  .kitchen .griddle .station-controls .food-icon.is-small .food-art {
+    transform: scale(0.65);
+  }
+}

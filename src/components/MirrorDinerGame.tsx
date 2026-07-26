@@ -2087,6 +2087,8 @@ export default function MirrorDinerGame() {
                     <button
                       className="metal-switch"
                       key={source}
+                      aria-label={COOKING[source].label}
+                      title={COOKING[source].label}
                       disabled={tasks[station].length >= stationSlots[station]}
                       onClick={() => startCooking(source)}
                     >
