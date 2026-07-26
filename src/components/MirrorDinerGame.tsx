@@ -1935,7 +1935,7 @@ export default function MirrorDinerGame() {
                     {canReceive
                       ? willComplete
                         ? "まとめて提供"
-                        : `${selectedStockItems.length}品を登録`
+                        : `${selectedStockItems.length}品を載せる`
                       : `#${order.id.toString().padStart(3, "0")}`}
                   </span>
                 </header>
@@ -1959,7 +1959,7 @@ export default function MirrorDinerGame() {
                   ))}
                 </div>
                 <div className="tray-line">
-                  <span>登録：</span>
+                  <span>トレー：</span>
                   <div>
                     {order.tray.length === 0 && <small>まだありません</small>}
                     {order.tray.map((item) => (
@@ -2351,8 +2351,8 @@ export default function MirrorDinerGame() {
               >
                 TABLE {selectedOrderData?.table.toString().padStart(2, "0") ?? "--"}へ
                 {selectedOrderData && selectedBatchCompletes(selectedOrderData)
-                  ? "まとめて提供"
-                  : `${selectedStockItems.length}品登録`}
+                  ? "提供"
+                  : `${selectedStockItems.length}品載せる`}
               </button>
               <button
                 className="waste-button"
@@ -2412,7 +2412,7 @@ export default function MirrorDinerGame() {
                 材料が揃ったら仕上げ台へ。複雑な料理は二つの完成品を合体させる。
               </li>
               <li>
-                <b>伝票へ登録して提供</b>
+                <b>トレーへ載せて提供</b>
                 完成品は複数選べる。料理をまとめて選ぶ→渡したい伝票をタップ。
                 注文が揃えばその場でまとめて提供できる。
                 間違えた料理は伝票内をタップして戻す。

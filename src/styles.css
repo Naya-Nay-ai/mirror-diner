@@ -5918,3 +5918,378 @@ button:focus-visible {
     transform: scale(0.65);
   }
 }
+
+/* ---------- MOBILE ONE-SCREEN KITCHEN ----------
+   A 360 x 648 browser viewport is the compact baseline. Keep the full
+   workflow visible without relying on the kitchen's internal scroll. */
+
+@media (max-width: 640px) and (max-height: 760px),
+  (max-aspect-ratio: 4 / 5) and (max-height: 760px) {
+  .game-header {
+    height: calc(48px + env(safe-area-inset-top));
+    min-height: calc(48px + env(safe-area-inset-top));
+  }
+
+  .mini-logo {
+    padding-block: 2px;
+  }
+
+  .mini-logo strong {
+    font-size: 1.12rem;
+  }
+
+  .kitchen-clock strong {
+    font-size: 1.3rem;
+  }
+
+  .register-score strong {
+    font-size: 0.93rem;
+  }
+
+  .shift-tools {
+    height: 34px;
+    padding-block: 2px;
+  }
+
+  .shift-tools button {
+    min-height: 26px;
+    grid-template-columns: 19px 1fr auto;
+    gap: 2px;
+    padding-block: 1px;
+  }
+
+  .shift-tools button i {
+    width: 18px;
+    height: 18px;
+    font-size: 0.62rem;
+  }
+
+  .shift-tools .time-card-tool .clock-face {
+    width: 14px;
+    height: 14px;
+  }
+
+  .game-workspace {
+    height: calc(100svh - 82px - env(safe-area-inset-top));
+  }
+
+  .service-panel {
+    flex-basis: 220px;
+    grid-template-rows: 72px minmax(0, 1fr);
+  }
+
+  .service-panel .counter-scene {
+    height: 72px;
+  }
+
+  .service-panel .night-window {
+    inset: 5px 5% 25px;
+    border-width: 3px;
+  }
+
+  .service-panel .counter-lamps i {
+    height: 14px;
+  }
+
+  .service-panel .counter-lamps i::after {
+    top: 12px;
+    width: 23px;
+    height: 10px;
+    border-width: 2px;
+  }
+
+  .service-panel .customer-row {
+    inset: 2px 4% 2px;
+  }
+
+  .service-panel .customer {
+    height: 68px;
+  }
+
+  .service-panel .customer-sprite {
+    bottom: -58px;
+    height: 138px;
+    max-width: 104px;
+  }
+
+  .service-panel .customer-small .customer-sprite {
+    bottom: -39px;
+    height: 112px;
+    max-width: 88px;
+  }
+
+  .service-panel .counter-top {
+    height: 12px;
+    border-top-width: 3px;
+  }
+
+  .service-panel .ticket-rail {
+    padding: 14px 4px 3px;
+  }
+
+  .service-panel .metal-rail {
+    height: 15px;
+  }
+
+  .service-panel .order-ticket {
+    padding: 6px 3px 32px;
+  }
+
+  .service-panel .order-ticket header {
+    padding-bottom: 1px;
+  }
+
+  .service-panel .ticket-items {
+    padding-top: 1px;
+  }
+
+  .service-panel .ticket-items > div {
+    min-height: 22px;
+  }
+
+  .service-panel .ticket-items small {
+    margin-top: 0;
+  }
+
+  .service-panel .tray-line {
+    min-height: 17px;
+    margin-top: 1px;
+  }
+
+  .service-panel .tray-line button {
+    width: 18px;
+    height: 18px;
+  }
+
+  .service-panel .tray-line .food-icon.is-small {
+    transform: scale(0.78);
+    transform-origin: left top;
+  }
+
+  .service-panel .wait-gauge {
+    bottom: 27px;
+    height: 6px;
+  }
+
+  .service-panel .serve-button {
+    min-height: 21px;
+    bottom: 3px;
+  }
+
+  .kitchen {
+    padding: 40px 4px 4px;
+    overflow-y: hidden;
+  }
+
+  .kitchen-pass {
+    left: 4px;
+    right: 4px;
+    top: 4px;
+    height: 32px;
+  }
+
+  .kitchen-pass .heat-lamps i {
+    height: 10px;
+  }
+
+  .kitchen-pass .heat-lamps i::after {
+    width: 15px;
+    height: 6px;
+    margin-top: 7px;
+  }
+
+  .kitchen-pass .service-shelf {
+    bottom: 3px;
+    height: 9px;
+  }
+
+  .kitchen-pass .service-shelf strong {
+    bottom: 8px;
+  }
+
+  .kitchen-pass .plate-stack,
+  .kitchen-pass .glass-rack,
+  .kitchen-pass .syrup-bottles {
+    transform: scale(0.72);
+    transform-origin: bottom left;
+  }
+
+  .kitchen .equipment-row {
+    gap: 3px;
+  }
+
+  .kitchen .equipment {
+    padding: 16px 3px 3px;
+    border-width: 2px;
+  }
+
+  .kitchen .equipment-label {
+    top: 2px;
+  }
+
+  .kitchen .station-slots,
+  .kitchen .drink-station-slots {
+    gap: 2px;
+  }
+
+  .kitchen .cook-surface,
+  .kitchen .station-slots.slots-2 .cook-surface,
+  .kitchen .station-slots.slots-3 .cook-surface {
+    min-height: 48px;
+    border-width: 2px;
+  }
+
+  .kitchen .cook-surface .food-icon:not(.is-small),
+  .kitchen .drink-slot .food-icon:not(.is-small) {
+    transform: scale(0.78);
+  }
+
+  .kitchen .equipment-empty {
+    font-size: 1.42rem;
+  }
+
+  .kitchen .equipment-status {
+    bottom: 5px;
+    font-size: 0.42rem;
+  }
+
+  .kitchen .station-controls {
+    gap: 2px;
+  }
+
+  .kitchen .station-controls .metal-switch,
+  .kitchen .griddle .station-controls .metal-switch {
+    min-height: 28px;
+    margin-top: 2px;
+    padding: 2px;
+  }
+
+  .kitchen .station-controls .food-icon.is-small {
+    width: 22px;
+    height: 19px;
+  }
+
+  .kitchen .station-controls .food-icon.is-small .food-art,
+  .kitchen .griddle .station-controls .food-icon.is-small .food-art {
+    transform: scale(0.55);
+  }
+
+  .kitchen .drink-machine {
+    min-height: 0;
+    padding: 3px;
+    border-width: 2px;
+  }
+
+  .kitchen .drinks::before {
+    top: 15px;
+  }
+
+  .kitchen .drink-station-slots {
+    padding-top: 10px;
+  }
+
+  .kitchen .drink-slot {
+    min-height: 43px;
+  }
+
+  .kitchen .drink-machine .drink-buttons {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px;
+    padding-top: 2px;
+  }
+
+  .kitchen .drink-buttons button {
+    min-height: 27px;
+    gap: 1px;
+    padding: 1px;
+  }
+
+  .kitchen .drink-buttons button span:last-child {
+    overflow: hidden;
+    font-size: 0.42rem;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .kitchen .prep-row {
+    gap: 3px;
+    margin-top: 4px;
+  }
+
+  .kitchen .assembly-bench,
+  .kitchen .stock-bin {
+    border-width: 2px;
+  }
+
+  .kitchen .assembly-bench header,
+  .kitchen .stock-bin header {
+    min-height: 18px;
+    padding: 3px 4px;
+  }
+
+  .kitchen .ingredient-wells {
+    gap: 2px;
+    padding: 3px 3px 0;
+  }
+
+  .kitchen .ingredient-wells i {
+    height: 9px;
+    border-width: 1px;
+  }
+
+  .kitchen .assembly-bench p {
+    margin: 3px;
+    padding: 2px;
+    font-size: 0.43rem;
+    line-height: 1.15;
+  }
+
+  .kitchen .assembly-actions {
+    gap: 2px;
+    padding: 0 3px 3px;
+  }
+
+  .kitchen .assembly-bench button {
+    min-height: 28px;
+    grid-template-columns: 19px minmax(0, 1fr);
+    padding: 1px;
+    border-width: 1px;
+    font-size: 0.43rem;
+  }
+
+  .kitchen .stock-items {
+    min-height: 72px;
+    max-height: 72px;
+    gap: 2px;
+    padding: 2px;
+  }
+
+  .kitchen .stock-items > button {
+    min-height: 33px;
+  }
+
+  .kitchen .stock-items > button .food-icon {
+    transform: scale(0.72);
+  }
+
+  .kitchen .stock-items > p {
+    padding: 5px 2px;
+    font-size: 0.45rem;
+  }
+
+  .kitchen .stock-actions {
+    grid-template-columns: 1fr 42px;
+    gap: 2px;
+    padding: 2px;
+  }
+
+  .kitchen .stock-actions button,
+  .kitchen .stock-actions .waste-button {
+    min-height: 31px;
+  }
+
+  .kitchen .trash-can {
+    transform: scale(0.76);
+  }
+}
