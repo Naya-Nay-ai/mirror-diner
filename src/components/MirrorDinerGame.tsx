@@ -22,6 +22,45 @@ import {
 } from "../gameData";
 
 type Screen = "title" | "opening" | "game" | "result";
+type TrainingStep =
+  | "welcomeShu"
+  | "welcomeMiu"
+  | "welcomeCalm"
+  | "welcomeVisit"
+  | "welcomeReady"
+  | "coffeeStart"
+  | "coffeeCollect"
+  | "coffeeSelect"
+  | "coffeeServe"
+  | "coffeeDone"
+  | "colaStart"
+  | "colaCollect"
+  | "colaSelect"
+  | "colaServe"
+  | "colaDone"
+  | "friesStart"
+  | "friesCollect"
+  | "friesSelect"
+  | "friesServe"
+  | "friesDone"
+  | "pattyStart"
+  | "pattyCollect"
+  | "burgerAssemble"
+  | "burgerSelect"
+  | "burgerServe"
+  | "burgerDone"
+  | "setIntro"
+  | "setPattyStart"
+  | "setFriesStart"
+  | "setColaStart"
+  | "setCollect"
+  | "setAssemble"
+  | "setSelect"
+  | "setServe"
+  | "completeMiu"
+  | "completeShu"
+  | "completeVisit"
+  | "completeBye";
 type PrepIngredientId = PreparedIngredientId;
 type StockItem = {
   uid: number;
@@ -272,6 +311,221 @@ const SHIFT_MEMOS: Record<
   },
 };
 
+const TRAINING_DIALOGUE: Record<
+  TrainingStep,
+  {
+    speaker: "shu" | "miu";
+    text: string;
+    phase: string;
+    next?: string;
+  }
+> = {
+  welcomeShu: {
+    speaker: "shu",
+    text: "みらーだいなーへ ようこそ〜",
+    phase: "WELCOME",
+    next: "つぎへ",
+  },
+  welcomeMiu: {
+    speaker: "miu",
+    text: "きょうは しんじんけんしゅう だよっ",
+    phase: "WELCOME",
+    next: "つぎへ",
+  },
+  welcomeCalm: {
+    speaker: "shu",
+    text: "ひとつずつ おぼえれば だいじょうぶ",
+    phase: "WELCOME",
+    next: "つぎへ",
+  },
+  welcomeVisit: {
+    speaker: "miu",
+    text: "しゅとみうも おきゃくさまとして くるからね〜！",
+    phase: "WELCOME",
+    next: "つぎへ",
+  },
+  welcomeReady: {
+    speaker: "shu",
+    text: "おいしく だしてもらえるの、たのしみにしてるよ",
+    phase: "WELCOME",
+    next: "けんしゅうを はじめる",
+  },
+  coffeeStart: {
+    speaker: "shu",
+    text: "まずは こーひーを つくってみよう",
+    phase: "STEP 1 / 6　こーひー",
+  },
+  coffeeCollect: {
+    speaker: "miu",
+    text: "できたら かっぷを おして かいしゅうしてねっ",
+    phase: "STEP 1 / 6　こーひー",
+  },
+  coffeeSelect: {
+    speaker: "shu",
+    text: "できた こーひーを えらんでみよう",
+    phase: "STEP 1 / 6　こーひー",
+  },
+  coffeeServe: {
+    speaker: "shu",
+    text: "TABLE 01へ ていきょうしてみよう",
+    phase: "STEP 1 / 6　こーひー",
+  },
+  coffeeDone: {
+    speaker: "shu",
+    text: "できたね。つぎも ちゅうもんと おなじものを えらぼう",
+    phase: "STEP 1 / 6　CLEAR",
+    next: "つぎへ",
+  },
+  colaStart: {
+    speaker: "miu",
+    text: "こんどは こーら だよ〜！",
+    phase: "STEP 2 / 6　こーら",
+  },
+  colaCollect: {
+    speaker: "shu",
+    text: "できあがったら かいしゅうしよう",
+    phase: "STEP 2 / 6　こーら",
+  },
+  colaSelect: {
+    speaker: "shu",
+    text: "ちゅうもんひょうと おなじ こーらを えらんでね",
+    phase: "STEP 2 / 6　こーら",
+  },
+  colaServe: {
+    speaker: "miu",
+    text: "そのまま TABLE 01へ ていきょうしてねっ",
+    phase: "STEP 2 / 6　こーら",
+  },
+  colaDone: {
+    speaker: "miu",
+    text: "いいかんじ〜！",
+    phase: "STEP 2 / 6　CLEAR",
+    next: "つぎへ",
+  },
+  friesStart: {
+    speaker: "shu",
+    text: "ぽてとは ふらいやーで あげるよ",
+    phase: "STEP 3 / 6　ぽてと",
+  },
+  friesCollect: {
+    speaker: "miu",
+    text: "できるまで ちょっと まってねっ",
+    phase: "STEP 3 / 6　ぽてと",
+  },
+  friesSelect: {
+    speaker: "shu",
+    text: "あがったら ちゃんと かいしゅうして、ぽてとを えらぼう",
+    phase: "STEP 3 / 6　ぽてと",
+  },
+  friesServe: {
+    speaker: "miu",
+    text: "TABLE 01へ ていきょう〜！",
+    phase: "STEP 3 / 6　ぽてと",
+  },
+  friesDone: {
+    speaker: "shu",
+    text: "じょうずだよ。つぎは ぐりどるを つかおう",
+    phase: "STEP 3 / 6　CLEAR",
+    next: "つぎへ",
+  },
+  pattyStart: {
+    speaker: "shu",
+    text: "ぱてぃは ぐりどるで やくよ",
+    phase: "STEP 4 / 6　ぱてぃ",
+  },
+  pattyCollect: {
+    speaker: "miu",
+    text: "やけたら わすれずに とってね〜！",
+    phase: "STEP 4 / 6　ぱてぃ",
+  },
+  burgerAssemble: {
+    speaker: "shu",
+    text: "やけた ぱてぃで、ばーがーを くみたてよう",
+    phase: "STEP 5 / 6　ばーがー",
+  },
+  burgerSelect: {
+    speaker: "miu",
+    text: "かんせいした ばーがーを えらんでねっ",
+    phase: "STEP 5 / 6　ばーがー",
+  },
+  burgerServe: {
+    speaker: "shu",
+    text: "これも TABLE 01へ ていきょうしよう",
+    phase: "STEP 5 / 6　ばーがー",
+  },
+  burgerDone: {
+    speaker: "miu",
+    text: "わ〜！ ばーがーも できた〜！",
+    phase: "STEP 5 / 6　CLEAR",
+    next: "さいごへ",
+  },
+  setIntro: {
+    speaker: "miu",
+    text: "さいごは せっとちゅうもん〜！",
+    phase: "STEP 6 / 6　せっと",
+    next: "ちゅうもんを うける",
+  },
+  setPattyStart: {
+    speaker: "shu",
+    text: "やく、あげる、そそぐ。まずは ぱてぃから",
+    phase: "STEP 6 / 6　せっと",
+  },
+  setFriesStart: {
+    speaker: "miu",
+    text: "ぱてぃを まつあいだに、ぽてとも あげよう〜！",
+    phase: "STEP 6 / 6　せっと",
+  },
+  setColaStart: {
+    speaker: "shu",
+    text: "つぎは こーら。べつの せつびも いっしょに うごかせるよ",
+    phase: "STEP 6 / 6　せっと",
+  },
+  setCollect: {
+    speaker: "miu",
+    text: "できたものから ぜんぶ かいしゅうしてねっ",
+    phase: "STEP 6 / 6　せっと",
+  },
+  setAssemble: {
+    speaker: "shu",
+    text: "ぱてぃを ばーがーに しあげよう",
+    phase: "STEP 6 / 6　せっと",
+  },
+  setSelect: {
+    speaker: "miu",
+    text: "ばーがー、ぽてと、こーらを ぜんぶ えらんでね〜！",
+    phase: "STEP 6 / 6　せっと",
+  },
+  setServe: {
+    speaker: "shu",
+    text: "みっつ そろったね。まとめて ていきょうしよう",
+    phase: "STEP 6 / 6　せっと",
+  },
+  completeMiu: {
+    speaker: "miu",
+    text: "わ〜！ できた〜！ おつかれさま〜！",
+    phase: "TRAINING COMPLETE",
+    next: "つぎへ",
+  },
+  completeShu: {
+    speaker: "shu",
+    text: "これで きほんのえいぎょうは ばっちりだよ",
+    phase: "TRAINING COMPLETE",
+    next: "つぎへ",
+  },
+  completeVisit: {
+    speaker: "shu",
+    text: "しゅとみうも おみせに くるからね",
+    phase: "TRAINING COMPLETE",
+    next: "つぎへ",
+  },
+  completeBye: {
+    speaker: "miu",
+    text: "そのときは よろしくねっ",
+    phase: "TRAINING COMPLETE",
+    next: "けんしゅうを おわる",
+  },
+};
+
 const emptyStats: Stats = {
   servedOrders: 0,
   servedItems: 0,
@@ -463,6 +717,7 @@ export default function MirrorDinerGame() {
   const [screen, setScreen] = useState<Screen>("title");
   const [sound, setSound] = useState(true);
   const [tutorial, setTutorial] = useState(false);
+  const [trainingStep, setTrainingStep] = useState<TrainingStep | null>(null);
   const [workshop, setWorkshop] = useState(false);
   const [staffStore, setStaffStore] = useState(false);
   const [saveLoaded, setSaveLoaded] = useState(false);
@@ -522,7 +777,12 @@ export default function MirrorDinerGame() {
   const introOrderQueueRef = useRef<MenuId[]>([]);
   const playSound = useDinerAudio(sound);
 
-  const difficultyData = DIFFICULTIES[difficulty];
+  const trainingMode = trainingStep !== null;
+  const trainingDialogue = trainingStep
+    ? TRAINING_DIALOGUE[trainingStep]
+    : null;
+  const activeDifficulty: DifficultyId = trainingMode ? "easy" : difficulty;
+  const difficultyData = DIFFICULTIES[activeDifficulty];
   const shiftMemo = SHIFT_MEMOS[difficulty];
   const stationSlots: Record<StationId, number> = {
     griddle: UPGRADE_DATA.griddle.levels[upgrades.griddle - 1].slots,
@@ -752,6 +1012,7 @@ export default function MirrorDinerGame() {
     setEarnedMissionBonus(0);
     setUsedServiceOvertime(false);
     setRecipeBookOpen(false);
+    setTrainingStep(null);
     recipePausedAtRef.current = 0;
     normalFeaturedIndexRef.current = 0;
     setTutorial(true);
@@ -913,6 +1174,34 @@ export default function MirrorDinerGame() {
   ]);
 
   useEffect(() => {
+    if (screen !== "game" || !trainingMode) return;
+    const timer = window.setInterval(() => {
+      const time = Date.now();
+      setNow(time);
+      setTasks((current) => {
+        let changed = false;
+        const next: Record<StationId, Task[]> = {
+          griddle: [...current.griddle],
+          fryer: [...current.fryer],
+          drinks: [...current.drinks],
+        };
+        (Object.keys(next) as StationId[]).forEach((station) => {
+          next[station] = next[station].map((task) => {
+            if (!task.chimed && time >= task.readyAt) {
+              playSound(station === "drinks" ? "drink" : "ready");
+              changed = true;
+              return { ...task, chimed: true };
+            }
+            return task;
+          });
+        });
+        return changed ? next : current;
+      });
+    }, 100);
+    return () => window.clearInterval(timer);
+  }, [playSound, screen, trainingMode]);
+
+  useEffect(() => {
     if (!flash) return;
     const timeout = window.setTimeout(() => setFlash(null), 420);
     return () => window.clearTimeout(timeout);
@@ -924,17 +1213,186 @@ export default function MirrorDinerGame() {
     return () => window.clearTimeout(timeout);
   }, [badTicket]);
 
+  const clearTrainingKitchen = () => {
+    setStock([]);
+    stockRef.current = [];
+    setSelectedStock([]);
+    setTasks({ griddle: [], fryer: [], drinks: [] });
+    tasksRef.current = { griddle: [], fryer: [], drinks: [] };
+    setOrders([]);
+    ordersRef.current = [];
+    setSelectedOrder(null);
+    setCustomerReactions({});
+    customerReactionsRef.current = {};
+  };
+
+  const prepareTrainingOrder = (
+    items: Partial<Record<MenuId, number>>,
+    customer: 0 | 1,
+  ) => {
+    clearTrainingKitchen();
+    const time = Date.now();
+    const order: Order = {
+      id: uidRef.current++,
+      table: 1,
+      createdAt: time,
+      expiresAt: time + 60 * 60 * 1000,
+      items,
+      tray: [],
+      customer,
+    };
+    setNow(time);
+    setOrders([order]);
+    ordersRef.current = [order];
+    setSelectedOrder(order.id);
+    playSound("ticket");
+  };
+
+  const startTraining = () => {
+    startAtRef.current = 0;
+    shiftDurationRef.current = GAME_SECONDS;
+    nextOrderAtRef.current = 0;
+    finishedRef.current = false;
+    uidRef.current = 1;
+    setRemaining(GAME_SECONDS);
+    setScore(0);
+    setCombo(0);
+    setStats(emptyStats);
+    clearTrainingKitchen();
+    setNow(Date.now());
+    setFlash(null);
+    setBadTicket(null);
+    setPaused(false);
+    setSmileMode(false);
+    setTutorial(false);
+    setRecipeBookOpen(false);
+    setTrainingStep("welcomeShu");
+    setScreen("game");
+  };
+
+  const finishTraining = () => {
+    clearTrainingKitchen();
+    setTrainingStep(null);
+    setFlash(null);
+    setCombo(0);
+    setScore(0);
+    setScreen("title");
+  };
+
+  const advanceTrainingCard = () => {
+    switch (trainingStep) {
+      case "welcomeShu":
+        setTrainingStep("welcomeMiu");
+        break;
+      case "welcomeMiu":
+        setTrainingStep("welcomeCalm");
+        break;
+      case "welcomeCalm":
+        setTrainingStep("welcomeVisit");
+        break;
+      case "welcomeVisit":
+        setTrainingStep("welcomeReady");
+        break;
+      case "welcomeReady":
+        prepareTrainingOrder({ coffee: 1 }, 0);
+        setTrainingStep("coffeeStart");
+        break;
+      case "coffeeDone":
+        prepareTrainingOrder({ cola: 1 }, 1);
+        setTrainingStep("colaStart");
+        break;
+      case "colaDone":
+        prepareTrainingOrder({ fries: 1 }, 0);
+        setTrainingStep("friesStart");
+        break;
+      case "friesDone":
+        prepareTrainingOrder({ hamburger: 1 }, 1);
+        setTrainingStep("pattyStart");
+        break;
+      case "burgerDone":
+        clearTrainingKitchen();
+        setTrainingStep("setIntro");
+        break;
+      case "setIntro":
+        prepareTrainingOrder({ hamburger: 1, fries: 1, cola: 1 }, 0);
+        setTrainingStep("setPattyStart");
+        break;
+      case "completeMiu":
+        setTrainingStep("completeShu");
+        break;
+      case "completeShu":
+        setTrainingStep("completeVisit");
+        break;
+      case "completeVisit":
+        setTrainingStep("completeBye");
+        break;
+      case "completeBye":
+        finishTraining();
+        break;
+      default:
+        break;
+    }
+  };
+
+  const trainingCookTarget = (source: CookableId) => {
+    if (!trainingStep) return true;
+    return (
+      (trainingStep === "coffeeStart" && source === "coffee") ||
+      (trainingStep === "colaStart" && source === "cola") ||
+      (trainingStep === "friesStart" && source === "fries") ||
+      (trainingStep === "pattyStart" && source === "patty") ||
+      (trainingStep === "setPattyStart" && source === "patty") ||
+      (trainingStep === "setFriesStart" && source === "fries") ||
+      (trainingStep === "setColaStart" && source === "cola")
+    );
+  };
+
+  const trainingCollectTarget = (task?: Task) => {
+    if (!trainingStep || !task) return !trainingStep;
+    return (
+      (trainingStep === "coffeeCollect" && task.source === "coffee") ||
+      (trainingStep === "colaCollect" && task.source === "cola") ||
+      (trainingStep === "friesCollect" && task.source === "fries") ||
+      (trainingStep === "pattyCollect" && task.source === "patty") ||
+      (trainingStep === "setCollect" &&
+        (task.source === "patty" ||
+          task.source === "fries" ||
+          task.source === "cola"))
+    );
+  };
+
+  const trainingStockTarget = (item: StockItem) => {
+    if (!trainingStep) return true;
+    if (trainingStep === "coffeeSelect") return item.id === "coffee";
+    if (trainingStep === "colaSelect") return item.id === "cola";
+    if (trainingStep === "friesSelect") return item.id === "fries";
+    if (trainingStep === "burgerSelect") return item.id === "hamburger";
+    if (trainingStep === "setSelect") {
+      return (
+        item.id === "hamburger" || item.id === "fries" || item.id === "cola"
+      );
+    }
+    return false;
+  };
+
   const startCooking = (source: CookableId) => {
+    if (trainingMode && !trainingCookTarget(source)) return;
     const data = COOKING[source];
     if (tasks[data.station].length >= stationSlots[data.station] || remaining <= 0) {
       return;
     }
     const time = now;
     const equipmentMultiplier = data.station === "drinks" ? drinkSpeed : 1;
-    const cookMs = Math.round(
-      data.cookMs * difficultyData.cookMultiplier * equipmentMultiplier,
-    );
-    const burnGrace = data.burnMs === null ? null : difficultyData.burnGraceMs;
+    const cookMs = trainingMode
+      ? Math.min(1300, data.cookMs)
+      : Math.round(
+          data.cookMs * difficultyData.cookMultiplier * equipmentMultiplier,
+        );
+    const burnGrace = trainingMode
+      ? null
+      : data.burnMs === null
+        ? null
+        : difficultyData.burnGraceMs;
     setTasks((current) => ({
       ...current,
       [data.station]: [
@@ -949,25 +1407,51 @@ export default function MirrorDinerGame() {
         },
       ],
     }));
+    if (trainingStep === "coffeeStart") setTrainingStep("coffeeCollect");
+    if (trainingStep === "colaStart") setTrainingStep("colaCollect");
+    if (trainingStep === "friesStart") setTrainingStep("friesCollect");
+    if (trainingStep === "pattyStart") setTrainingStep("pattyCollect");
+    if (trainingStep === "setPattyStart") setTrainingStep("setFriesStart");
+    if (trainingStep === "setFriesStart") setTrainingStep("setColaStart");
+    if (trainingStep === "setColaStart") setTrainingStep("setCollect");
   };
 
   const collectTask = (station: StationId, taskUid: number) => {
     const task = tasks[station].find((entry) => entry.uid === taskUid);
-    if (!task || now < task.readyAt) return;
+    if (
+      !task ||
+      now < task.readyAt ||
+      (trainingMode && !trainingCollectTarget(task))
+    ) {
+      return;
+    }
     if (stock.length >= stockLimit) {
       setFlash("bad");
       return;
     }
     const data = COOKING[task.source];
     const burnt = task.burnAt !== null && now >= task.burnAt;
-    setStock((current) => [
-      ...current,
-      { uid: uidRef.current++, id: data.result, burnt },
-    ]);
+    const collectedItem = { uid: uidRef.current++, id: data.result, burnt };
+    setStock((current) => {
+      const next = [...current, collectedItem];
+      if (
+        trainingStep === "setCollect" &&
+        next.some((item) => item.id === "patty") &&
+        next.some((item) => item.id === "fries") &&
+        next.some((item) => item.id === "cola")
+      ) {
+        setTrainingStep("setAssemble");
+      }
+      return next;
+    });
     setTasks((current) => ({
       ...current,
       [station]: current[station].filter((entry) => entry.uid !== taskUid),
     }));
+    if (trainingStep === "coffeeCollect") setTrainingStep("coffeeSelect");
+    if (trainingStep === "colaCollect") setTrainingStep("colaSelect");
+    if (trainingStep === "friesCollect") setTrainingStep("friesSelect");
+    if (trainingStep === "pattyCollect") setTrainingStep("burgerAssemble");
   };
 
   const assemblyRecipes: Partial<
@@ -999,6 +1483,15 @@ export default function MirrorDinerGame() {
     ingredientsFor(id).every(Boolean);
 
   const assemble = (id: MenuId) => {
+    if (
+      trainingMode &&
+      !(
+        id === "hamburger" &&
+        (trainingStep === "burgerAssemble" || trainingStep === "setAssemble")
+      )
+    ) {
+      return;
+    }
     const ingredients = ingredientsFor(id);
     if (!ingredients.length || ingredients.some((item) => !item)) return;
     const ingredientIds = new Set(
@@ -1012,6 +1505,44 @@ export default function MirrorDinerGame() {
       { uid: uidRef.current++, id, burnt },
     ]);
     setSelectedStock([]);
+    if (trainingStep === "burgerAssemble") setTrainingStep("burgerSelect");
+    if (trainingStep === "setAssemble") setTrainingStep("setSelect");
+  };
+
+  const toggleStockSelection = (item: StockItem) => {
+    if (trainingMode && !trainingStockTarget(item)) return;
+    setSelectedStock((current) => {
+      const next = current.includes(item.uid)
+        ? current.filter((uid) => uid !== item.uid)
+        : [...current, item.uid];
+      if (trainingStep === "coffeeSelect" && item.id === "coffee") {
+        setTrainingStep("coffeeServe");
+      }
+      if (trainingStep === "colaSelect" && item.id === "cola") {
+        setTrainingStep("colaServe");
+      }
+      if (trainingStep === "friesSelect" && item.id === "fries") {
+        setTrainingStep("friesServe");
+      }
+      if (trainingStep === "burgerSelect" && item.id === "hamburger") {
+        setTrainingStep("burgerServe");
+      }
+      if (trainingStep === "setSelect") {
+        const selectedItems = next
+          .map((uid) =>
+            uid === item.uid ? item : stock.find((entry) => entry.uid === uid),
+          )
+          .filter((entry): entry is StockItem => Boolean(entry));
+        if (
+          selectedItems.some((entry) => entry.id === "hamburger") &&
+          selectedItems.some((entry) => entry.id === "fries") &&
+          selectedItems.some((entry) => entry.id === "cola")
+        ) {
+          setTrainingStep("setServe");
+        }
+      }
+      return next;
+    });
   };
 
   const registerSelectedToOrder = (orderId: number) => {
@@ -1077,10 +1608,21 @@ export default function MirrorDinerGame() {
 
   const registerSelected = () => {
     if (selectedOrder === null) return;
+    if (
+      trainingMode &&
+      trainingStep !== "coffeeServe" &&
+      trainingStep !== "colaServe" &&
+      trainingStep !== "friesServe" &&
+      trainingStep !== "burgerServe" &&
+      trainingStep !== "setServe"
+    ) {
+      return;
+    }
     registerSelectedToOrder(selectedOrder);
   };
 
   const returnFromTray = (orderId: number, itemUid: number) => {
+    if (trainingMode) return;
     const order = orders.find((entry) => entry.id === orderId);
     const item = order?.tray.find((entry) => entry.uid === itemUid);
     if (!item) return;
@@ -1095,6 +1637,7 @@ export default function MirrorDinerGame() {
   };
 
   const wasteSelected = () => {
+    if (trainingMode) return;
     if (selectedStock.length === 0) return;
     const selectedIds = new Set(selectedStock);
     const wasteCount = stock.filter((item) => selectedIds.has(item.uid)).length;
@@ -1174,7 +1717,14 @@ export default function MirrorDinerGame() {
     setFlash("good");
     playSound("bell");
     playSound("success");
-    nextOrderAtRef.current = Math.min(nextOrderAtRef.current, now + 900);
+    if (trainingStep === "coffeeServe") setTrainingStep("coffeeDone");
+    if (trainingStep === "colaServe") setTrainingStep("colaDone");
+    if (trainingStep === "friesServe") setTrainingStep("friesDone");
+    if (trainingStep === "burgerServe") setTrainingStep("burgerDone");
+    if (trainingStep === "setServe") setTrainingStep("completeMiu");
+    if (!trainingMode) {
+      nextOrderAtRef.current = Math.min(nextOrderAtRef.current, now + 900);
+    }
   };
 
   const finalScore = Math.max(
@@ -1561,6 +2111,19 @@ export default function MirrorDinerGame() {
               <span className="staff-bag-icon" aria-hidden="true">+</span>
               <span>スタッフ用品</span>
             </button>
+            <button
+              className="training-button"
+              onClick={startTraining}
+            >
+              <span className="training-button-pair" aria-hidden="true">
+                <img src="/customers/shu.svg" alt="" />
+                <img src="/customers/miu.svg" alt="" />
+              </span>
+              <span>
+                <small>TRAINING</small>
+                新人研修
+              </span>
+            </button>
             <span>TIP {tips}</span>
           </div>
         </section>
@@ -1748,7 +2311,11 @@ export default function MirrorDinerGame() {
   }
 
   return (
-    <main className={`game-screen ${flash ? `flash-${flash}` : ""}`}>
+    <main
+      className={`game-screen ${trainingMode ? "is-training" : ""} ${
+        flash ? `flash-${flash}` : ""
+      }`}
+    >
       <header className="game-header">
         <div className="mini-logo">
           <span>MIRROR</span>
@@ -1756,11 +2323,15 @@ export default function MirrorDinerGame() {
         </div>
         <div className="kitchen-clock">
           <span>TIME</span>
-          <strong>{Math.ceil(remaining).toString().padStart(2, "0")}</strong>
+          <strong>
+            {trainingMode
+              ? "∞"
+              : Math.ceil(remaining).toString().padStart(2, "0")}
+          </strong>
         </div>
         <div className="register-score">
-          <span>{difficultyData.en} / SCORE</span>
-          <strong>{score.toString().padStart(5, "0")}</strong>
+          <span>{trainingMode ? "NEW CREW / TRAINING" : `${difficultyData.en} / SCORE`}</span>
+          <strong>{trainingMode ? "PRACTICE" : score.toString().padStart(5, "0")}</strong>
         </div>
         <div className={`combo-bell ${combo > 1 ? "is-hot" : ""}`}>
           <i />
@@ -1777,12 +2348,17 @@ export default function MirrorDinerGame() {
       </header>
 
       <aside className={`shift-tools ${smileMode ? "is-targeting" : ""}`}>
-        {difficulty === "extra" ? (
+        {trainingMode ? (
+          <span className="training-live">
+            <small>SHU &amp; MIU</small>
+            <strong>しんじんけんしゅう</strong>
+          </span>
+        ) : activeDifficulty === "extra" ? (
           <span className="mission-live">
             <small>{missionData.en}</small>
             <strong>{missionProgress}/{missionData.target}</strong>
           </span>
-        ) : difficulty === "hard" ? (
+        ) : activeDifficulty === "hard" ? (
           <span className="special-live">
             <small>TODAY&apos;S SPECIAL</small>
             <strong>{MENU[tonightSpecial].ja}</strong>
@@ -1790,10 +2366,10 @@ export default function MirrorDinerGame() {
         ) : (
           <span className="shift-tools-label">STAFF KIT</span>
         )}
-        {hasHardMenu(difficulty) && (
+        {hasHardMenu(activeDifficulty) && (
           <button
             className="recipe-tool"
-            disabled={tutorial}
+            disabled={tutorial || trainingMode}
             onClick={openRecipeBook}
           >
             <i aria-hidden="true"><span className="recipe-book-icon" /></i>
@@ -1803,7 +2379,7 @@ export default function MirrorDinerGame() {
         )}
         <button
           className="time-card-tool"
-          disabled={tutorial || supplies.timeCard <= 0}
+          disabled={tutorial || trainingMode || supplies.timeCard <= 0}
           onClick={pauseShift}
         >
           <i aria-hidden="true"><span className="clock-face" /></i>
@@ -1812,18 +2388,21 @@ export default function MirrorDinerGame() {
         </button>
         <button
           className="smile-tool"
-          disabled={tutorial || supplies.smile <= 0 || orders.length === 0}
+          disabled={
+            tutorial || trainingMode || supplies.smile <= 0 || orders.length === 0
+          }
           onClick={() => setSmileMode((value) => !value)}
         >
           <i aria-hidden="true">☺</i>
           <span>{smileMode ? "お客さんを選ぶ" : "スマイル"}</span>
           <b>×{supplies.smile}</b>
         </button>
-        {(difficulty === "hard" || difficulty === "extra") && (
+        {(activeDifficulty === "hard" || activeDifficulty === "extra") && (
           <button
             className={`overtime-tool ${usedServiceOvertime ? "is-used" : ""}`}
             disabled={
               tutorial ||
+              trainingMode ||
               supplies.serviceOvertime <= 0 ||
               usedServiceOvertime
             }
@@ -1917,6 +2496,7 @@ export default function MirrorDinerGame() {
                 } ${smileMode ? "is-smile-target" : ""}`}
                 key={order.id}
                 onClick={() => {
+                  if (trainingMode) return;
                   if (smileMode) {
                     applySmile(order.id);
                     return;
@@ -1965,6 +2545,7 @@ export default function MirrorDinerGame() {
                     {order.tray.map((item) => (
                       <button
                         key={item.uid}
+                        disabled={trainingMode}
                         onClick={(event) => {
                           event.stopPropagation();
                           returnFromTray(order.id, item.uid);
@@ -2024,23 +2605,23 @@ export default function MirrorDinerGame() {
                 ? [
                     "patty",
                     "pancakes",
-                    ...(hasNormalMenu(difficulty)
+                    ...(hasNormalMenu(activeDifficulty)
                       ? (["sausage"] as CookableId[])
                       : []),
-                    ...(hasHardMenu(difficulty)
+                    ...(hasHardMenu(activeDifficulty)
                       ? (["omeletBase"] as CookableId[])
                       : []),
                   ]
                 : [
                     "fries",
-                    ...(hasNormalMenu(difficulty)
+                    ...(hasNormalMenu(activeDifficulty)
                       ? (["donut"] as CookableId[])
                       : []),
-                    ...(hasHardMenu(difficulty)
+                    ...(hasHardMenu(activeDifficulty)
                       ? (["onionFries"] as CookableId[])
                       : []),
-                    ...(difficulty === "extra" ||
-                    (difficulty === "hard" &&
+                    ...(activeDifficulty === "extra" ||
+                    (activeDifficulty === "hard" &&
                       tonightSpecial === "mapleChickenPancakes")
                       ? (["friedChicken"] as CookableId[])
                       : []),
@@ -2057,8 +2638,16 @@ export default function MirrorDinerGame() {
                     const view = stationView(task);
                     return (
                       <button
-                        className={`cook-surface state-${view.state}`}
+                        className={`cook-surface state-${view.state} ${
+                          trainingMode && trainingCollectTarget(task)
+                            ? "training-target"
+                            : ""
+                        }`}
                         key={`${station}-${index}`}
+                        disabled={
+                          trainingMode &&
+                          (!task || !trainingCollectTarget(task))
+                        }
                         onClick={() =>
                           task
                             ? collectTask(station, task.uid)
@@ -2085,11 +2674,18 @@ export default function MirrorDinerGame() {
                 <div className={`station-controls controls-${sources.length}`}>
                   {sources.map((source) => (
                     <button
-                      className="metal-switch"
+                      className={`metal-switch ${
+                        trainingMode && trainingCookTarget(source)
+                          ? "training-target"
+                          : ""
+                      }`}
                       key={source}
                       aria-label={COOKING[source].label}
                       title={COOKING[source].label}
-                      disabled={tasks[station].length >= stationSlots[station]}
+                      disabled={
+                        tasks[station].length >= stationSlots[station] ||
+                        (trainingMode && !trainingCookTarget(source))
+                      }
                       onClick={() => startCooking(source)}
                     >
                       <FoodIcon id={COOKING[source].result} small />
@@ -2106,7 +2702,7 @@ export default function MirrorDinerGame() {
           })}
           <div className="equipment drinks">
             <div className="equipment-label">
-              {hasNormalMenu(difficulty)
+              {hasNormalMenu(activeDifficulty)
                 ? "SODA & DESSERT / ドリンクサーバー"
                 : "DRINK SERVER / ドリンクサーバー"}　
               {tasks.drinks.length}/{stationSlots.drinks}
@@ -2118,9 +2714,16 @@ export default function MirrorDinerGame() {
                   const view = stationView(task);
                   return (
                     <button
-                      className={`drink-slot state-${view.state}`}
+                      className={`drink-slot state-${view.state} ${
+                        trainingMode && trainingCollectTarget(task)
+                          ? "training-target"
+                          : ""
+                      }`}
                       key={`drink-${index}`}
-                      disabled={!task}
+                      disabled={
+                        !task ||
+                        (trainingMode && !trainingCollectTarget(task))
+                      }
                       onClick={() => task && collectTask("drinks", task.uid)}
                     >
                       {task ? (
@@ -2149,18 +2752,26 @@ export default function MirrorDinerGame() {
                     "coffee",
                     "shake",
                     "creamSoda",
-                    ...(hasNormalMenu(difficulty)
+                    ...(hasNormalMenu(activeDifficulty)
                       ? (["bananaSplit"] as CookableId[])
                       : []),
-                    ...(difficulty === "extra" ||
-                    (difficulty === "hard" && tonightSpecial === "donutSundae")
+                    ...(activeDifficulty === "extra" ||
+                    (activeDifficulty === "hard" && tonightSpecial === "donutSundae")
                       ? (["sundaeScoop"] as CookableId[])
                       : []),
                   ] as CookableId[]
                 ).map((id) => (
                   <button
+                    className={
+                      trainingMode && trainingCookTarget(id)
+                        ? "training-target"
+                        : ""
+                    }
                     key={id}
-                    disabled={tasks.drinks.length >= stationSlots.drinks}
+                    disabled={
+                      tasks.drinks.length >= stationSlots.drinks ||
+                      (trainingMode && !trainingCookTarget(id))
+                    }
                     onClick={() => startCooking(id)}
                   >
                     <FoodIcon id={COOKING[id].result} small />
@@ -2187,13 +2798,13 @@ export default function MirrorDinerGame() {
             </div>
             <p>
               パティ <strong>×{stock.filter((item) => item.id === "patty").length}</strong>
-              {hasNormalMenu(difficulty) && (
+              {hasNormalMenu(activeDifficulty) && (
                 <>
                   　ソーセージ{" "}
                   <strong>×{stock.filter((item) => item.id === "sausage").length}</strong>
                 </>
               )}
-              {hasHardMenu(difficulty) && (
+              {hasHardMenu(activeDifficulty) && (
                 <>
                   <br />
                   卵{" "}
@@ -2207,20 +2818,32 @@ export default function MirrorDinerGame() {
             </p>
             <div className="assembly-actions">
               <button
+                className={
+                  trainingMode &&
+                  (trainingStep === "burgerAssemble" ||
+                    trainingStep === "setAssemble")
+                    ? "training-target"
+                    : ""
+                }
                 onClick={() => assemble("hamburger")}
-                disabled={!canAssemble("hamburger")}
+                disabled={
+                  !canAssemble("hamburger") ||
+                  (trainingMode &&
+                    trainingStep !== "burgerAssemble" &&
+                    trainingStep !== "setAssemble")
+                }
               >
                 <FoodIcon id="hamburger" small />
                 <span>ハンバーガー</span>
               </button>
               <button
                 onClick={() => assemble("cheeseburger")}
-                disabled={!canAssemble("cheeseburger")}
+                disabled={trainingMode || !canAssemble("cheeseburger")}
               >
                 <FoodIcon id="cheeseburger" small />
                 <span>チーズバーガー</span>
               </button>
-              {hasNormalMenu(difficulty) && (
+              {hasNormalMenu(activeDifficulty) && (
                 <button
                   onClick={() => assemble("hotdog")}
                   disabled={!canAssemble("hotdog")}
@@ -2229,7 +2852,7 @@ export default function MirrorDinerGame() {
                   <span>ホットドッグ</span>
                 </button>
               )}
-              {hasHardMenu(difficulty) && (
+              {hasHardMenu(activeDifficulty) && (
                 <button
                   onClick={() => assemble("denverOmelet")}
                   disabled={!canAssemble("denverOmelet")}
@@ -2238,8 +2861,8 @@ export default function MirrorDinerGame() {
                   <span>デンバーオムレツ</span>
                 </button>
               )}
-              {(difficulty === "extra" ||
-                (difficulty === "hard" &&
+              {(activeDifficulty === "extra" ||
+                (activeDifficulty === "hard" &&
                   tonightSpecial === "mapleChickenPancakes")) && (
                 <button
                   onClick={() => assemble("mapleChickenPancakes")}
@@ -2249,8 +2872,8 @@ export default function MirrorDinerGame() {
                   <span>メイプルチキン</span>
                 </button>
               )}
-              {(difficulty === "extra" ||
-                (difficulty === "hard" &&
+              {(activeDifficulty === "extra" ||
+                (activeDifficulty === "hard" &&
                   tonightSpecial === "onionRingBurger")) && (
                 <button
                   onClick={() => assemble("onionRingBurger")}
@@ -2260,8 +2883,8 @@ export default function MirrorDinerGame() {
                   <span>オニオンリングバーガー</span>
                 </button>
               )}
-              {(difficulty === "extra" ||
-                (difficulty === "hard" &&
+              {(activeDifficulty === "extra" ||
+                (activeDifficulty === "hard" &&
                   tonightSpecial === "donutSundae")) && (
                 <button
                   onClick={() => assemble("donutSundae")}
@@ -2306,16 +2929,15 @@ export default function MirrorDinerGame() {
                   <button
                     className={`${selectionIndex >= 0 ? "is-selected" : ""} ${
                       item.burnt ? "is-burnt" : ""
+                    } ${
+                      trainingMode && trainingStockTarget(item)
+                        ? "training-target"
+                        : ""
                     }`}
                     key={item.uid}
                     aria-pressed={selectionIndex >= 0}
-                    onClick={() =>
-                      setSelectedStock((value) =>
-                        value.includes(item.uid)
-                          ? value.filter((uid) => uid !== item.uid)
-                          : [...value, item.uid],
-                      )
-                    }
+                    disabled={trainingMode && !trainingStockTarget(item)}
+                    onClick={() => toggleStockSelection(item)}
                   >
                     {selectionIndex >= 0 && (
                       <i className="selection-order" aria-hidden="true">
@@ -2342,11 +2964,27 @@ export default function MirrorDinerGame() {
             </div>
             <div className="stock-actions">
               <button
+                className={
+                  trainingMode &&
+                  (trainingStep === "coffeeServe" ||
+                    trainingStep === "colaServe" ||
+                    trainingStep === "friesServe" ||
+                    trainingStep === "burgerServe" ||
+                    trainingStep === "setServe")
+                    ? "training-target"
+                    : ""
+                }
                 onClick={registerSelected}
                 disabled={
                   selectedStockItems.length === 0 ||
                   selectedStockItems.some((item) => isPrepIngredient(item.id)) ||
-                  !selectedOrderData
+                  !selectedOrderData ||
+                  (trainingMode &&
+                    trainingStep !== "coffeeServe" &&
+                    trainingStep !== "colaServe" &&
+                    trainingStep !== "friesServe" &&
+                    trainingStep !== "burgerServe" &&
+                    trainingStep !== "setServe")
                 }
               >
                 TABLE {selectedOrderData?.table.toString().padStart(2, "0") ?? "--"}へ
@@ -2357,7 +2995,7 @@ export default function MirrorDinerGame() {
               <button
                 className="waste-button"
                 onClick={wasteSelected}
-                disabled={selectedStockItems.length === 0}
+                disabled={trainingMode || selectedStockItems.length === 0}
                 aria-label={
                   selectedStockItems.length > 1
                     ? `選択した${selectedStockItems.length}品を廃棄`
@@ -2379,6 +3017,40 @@ export default function MirrorDinerGame() {
         </div>
       </section>
       </div>
+
+      {trainingDialogue && (
+        <aside
+          className={`training-coach training-${trainingDialogue.speaker} ${
+            trainingDialogue.next ? "is-message" : "is-guiding"
+          }`}
+          aria-live="polite"
+        >
+          <button
+            className="training-exit"
+            onClick={finishTraining}
+            aria-label="新人研修を終了してタイトルへ戻る"
+          >
+            ×
+          </button>
+          <div className="training-portrait" aria-hidden="true">
+            <img
+              src={`/customers/${trainingDialogue.speaker}.svg`}
+              alt=""
+              draggable={false}
+            />
+          </div>
+          <div className="training-copy">
+            <small>{trainingDialogue.phase}</small>
+            <strong>{trainingDialogue.speaker === "shu" ? "しゅ先輩" : "みう先輩"}</strong>
+            <p>{trainingDialogue.text}</p>
+          </div>
+          {trainingDialogue.next && (
+            <button className="training-next" onClick={advanceTrainingCard}>
+              {trainingDialogue.next}
+            </button>
+          )}
+        </aside>
+      )}
 
       {tutorial && (
         <div className="tutorial-overlay" role="dialog" aria-modal="true">
