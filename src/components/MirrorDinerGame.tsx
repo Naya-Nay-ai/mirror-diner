@@ -322,13 +322,13 @@ const TRAINING_DIALOGUE: Record<
 > = {
   welcomeShu: {
     speaker: "shu",
-    text: "みらーだいなーへ ようこそ〜",
+    text: "しゅだよー!! みらーだいなーへ ようこそ〜",
     phase: "WELCOME",
     next: "つぎへ",
   },
   welcomeMiu: {
     speaker: "miu",
-    text: "きょうは しんじんけんしゅう だよっ",
+    text: "みうだよー!! きょうは しんじんけんしゅう だよっ",
     phase: "WELCOME",
     next: "つぎへ",
   },
@@ -367,7 +367,7 @@ const TRAINING_DIALOGUE: Record<
   },
   coffeeServe: {
     speaker: "shu",
-    text: "TABLE 01へ ていきょうしてみよう",
+    text: "したの「TABLE 01へ提供」か、でんぴょうを おしてね",
     phase: "STEP 1 / 6　こーひー",
   },
   coffeeDone: {
@@ -778,6 +778,12 @@ export default function MirrorDinerGame() {
   const playSound = useDinerAudio(sound);
 
   const trainingMode = trainingStep !== null;
+  const trainingServeStep =
+    trainingStep === "coffeeServe" ||
+    trainingStep === "colaServe" ||
+    trainingStep === "friesServe" ||
+    trainingStep === "burgerServe" ||
+    trainingStep === "setServe";
   const trainingDialogue = trainingStep
     ? TRAINING_DIALOGUE[trainingStep]
     : null;
@@ -1608,16 +1614,7 @@ export default function MirrorDinerGame() {
 
   const registerSelected = () => {
     if (selectedOrder === null) return;
-    if (
-      trainingMode &&
-      trainingStep !== "coffeeServe" &&
-      trainingStep !== "colaServe" &&
-      trainingStep !== "friesServe" &&
-      trainingStep !== "burgerServe" &&
-      trainingStep !== "setServe"
-    ) {
-      return;
-    }
+    if (trainingMode && !trainingServeStep) return;
     registerSelectedToOrder(selectedOrder);
   };
 
@@ -2068,6 +2065,19 @@ export default function MirrorDinerGame() {
                 </button>
               ))}
             </div>
+            <button
+              className="training-button"
+              onClick={startTraining}
+            >
+              <span className="training-button-pair" aria-hidden="true">
+                <img src="/customers/shu.svg" alt="" />
+                <img src="/customers/miu.svg" alt="" />
+              </span>
+              <span>
+                <small>TRAINING</small>
+                新人研修
+              </span>
+            </button>
             <p className="difficulty-description">{difficultyData.description}</p>
             {difficulty === "extra" && (
               <div className="mission-selector" aria-label="EXTRAミッション">
@@ -2110,19 +2120,6 @@ export default function MirrorDinerGame() {
             >
               <span className="staff-bag-icon" aria-hidden="true">+</span>
               <span>スタッフ用品</span>
-            </button>
-            <button
-              className="training-button"
-              onClick={startTraining}
-            >
-              <span className="training-button-pair" aria-hidden="true">
-                <img src="/customers/shu.svg" alt="" />
-                <img src="/customers/miu.svg" alt="" />
-              </span>
-              <span>
-                <small>TRAINING</small>
-                新人研修
-              </span>
             </button>
             <span>TIP {tips}</span>
           </div>
@@ -2493,10 +2490,19 @@ export default function MirrorDinerGame() {
                   choosingDestination && !canReceive ? "cannot-receive" : ""
                 } ${
                   badTicket === order.id ? "is-rejected" : ""
-                } ${smileMode ? "is-smile-target" : ""}`}
+                } ${smileMode ? "is-smile-target" : ""} ${
+                  trainingMode && trainingServeStep && canReceive
+                    ? "training-target"
+                    : ""
+                }`}
                 key={order.id}
                 onClick={() => {
-                  if (trainingMode) return;
+                  if (trainingMode) {
+                    if (trainingServeStep && choosingDestination) {
+                      registerSelectedToOrder(order.id);
+                    }
+                    return;
+                  }
                   if (smileMode) {
                     applySmile(order.id);
                     return;
@@ -2965,12 +2971,7 @@ export default function MirrorDinerGame() {
             <div className="stock-actions">
               <button
                 className={
-                  trainingMode &&
-                  (trainingStep === "coffeeServe" ||
-                    trainingStep === "colaServe" ||
-                    trainingStep === "friesServe" ||
-                    trainingStep === "burgerServe" ||
-                    trainingStep === "setServe")
+                  trainingMode && trainingServeStep
                     ? "training-target"
                     : ""
                 }
@@ -2979,12 +2980,7 @@ export default function MirrorDinerGame() {
                   selectedStockItems.length === 0 ||
                   selectedStockItems.some((item) => isPrepIngredient(item.id)) ||
                   !selectedOrderData ||
-                  (trainingMode &&
-                    trainingStep !== "coffeeServe" &&
-                    trainingStep !== "colaServe" &&
-                    trainingStep !== "friesServe" &&
-                    trainingStep !== "burgerServe" &&
-                    trainingStep !== "setServe")
+                  (trainingMode && !trainingServeStep)
                 }
               >
                 TABLE {selectedOrderData?.table.toString().padStart(2, "0") ?? "--"}へ

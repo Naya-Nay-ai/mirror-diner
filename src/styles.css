@@ -18,7 +18,7 @@
 
 /* ---------- NEW CREW TRAINING ---------- */
 
-.title-control-deck .title-utility .training-button {
+.title-control-deck .training-button {
   display: flex;
   min-height: 50px;
   align-items: center;
@@ -45,12 +45,12 @@
   cursor: pointer;
 }
 
-.title-control-deck .title-utility .training-button:hover,
-.title-control-deck .title-utility .training-button:focus-visible {
+.title-control-deck .training-button:hover,
+.title-control-deck .training-button:focus-visible {
   background-color: #5b9d8f;
 }
 
-.title-control-deck .title-utility .training-button:active {
+.title-control-deck .training-button:active {
   translate: 0 2px;
   box-shadow:
     inset 3px 3px #245047,
@@ -58,7 +58,7 @@
     1px 1px 0 rgba(0, 0, 0, 0.34);
 }
 
-.title-control-deck .title-utility .training-button > span:last-child {
+.title-control-deck .training-button > span:last-child {
   display: flex;
   min-height: 0;
   flex-direction: column;
@@ -304,8 +304,8 @@
 }
 
 @media (max-width: 640px), (max-aspect-ratio: 4 / 5) {
-  .title-control-deck .title-utility .training-button {
-    grid-column: 1 / -1;
+  .title-control-deck .training-button {
+    width: 100%;
   }
 
   .training-live {
@@ -5563,6 +5563,7 @@ button:focus-visible {
   grid-template-columns: 150px minmax(330px, 1fr);
   grid-template-areas:
     "copy selector"
+    "copy training"
     "description description"
     "mission mission";
   align-items: center;
@@ -5597,6 +5598,12 @@ button:focus-visible {
   width: 100%;
   margin: 0;
   padding: 5px;
+}
+
+.title-difficulty-group .training-button {
+  grid-area: training;
+  width: 100%;
+  min-height: 44px;
 }
 
 .title-difficulty-group .difficulty-selector button {
@@ -5904,6 +5911,7 @@ button:focus-visible {
     grid-template-areas:
       "copy"
       "selector"
+      "training"
       "description"
       "mission";
     gap: 7px;
