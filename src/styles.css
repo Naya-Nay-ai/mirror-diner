@@ -7027,32 +7027,33 @@ button:focus-visible {
   background-image: url("/trophies/trophy-figurines.png");
   background-repeat: no-repeat;
   background-size: 300% 200%;
+  clip-path: inset(0 0 2% 0);
   mix-blend-mode: multiply;
   image-rendering: auto;
 }
 
 .trophy-promisingRookie {
-  background-position: 0 0;
+  background-position: 0 -11.5%;
 }
 
 .trophy-midnightAce {
-  background-position: 50% 0;
+  background-position: 50% -11.8%;
 }
 
 .trophy-nightKnight {
-  background-position: 100% 0;
+  background-position: 100% -11.7%;
 }
 
 .trophy-easySmile {
-  background-position: 0 100%;
+  background-position: 0 83%;
 }
 
 .trophy-peakTimeStar {
-  background-position: 50% 100%;
+  background-position: 50% 83%;
 }
 
 .trophy-lastOrderSurvivor {
-  background-position: 100% 100%;
+  background-position: 100% 83%;
 }
 
 
