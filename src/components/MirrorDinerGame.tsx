@@ -113,6 +113,8 @@ type TrophyData = {
   name: string;
   en: string;
   conditionLabel: string;
+  description: string;
+  lockedDescription: string;
   condition: TrophyCondition;
 };
 
@@ -177,6 +179,9 @@ const TROPHIES: readonly TrophyData[] = [
     name: "期待の新人",
     en: "PROMISING ROOKIE",
     conditionLabel: "累計スコア 5,000点",
+    description:
+      "はじめの一歩を踏み出した、新人スタッフの証。\nその笑顔なら、きっと常連さんも増えていく。",
+    lockedDescription: "まずは営業を重ねて、累計5,000点を目指そう。",
     condition: { kind: "cumulative", score: 5000 },
   },
   {
@@ -184,6 +189,9 @@ const TROPHIES: readonly TrophyData[] = [
     name: "深夜シフトのエース",
     en: "MIDNIGHT SHIFT ACE",
     conditionLabel: "累計スコア 20,000点",
+    description:
+      "忙しい夜も落ち着いて店を回す、頼れるエース。\n熱い料理も冷たいドリンクも、運ぶ姿に迷いなし。",
+    lockedDescription: "累計20,000点を達成すると棚に加わります。",
     condition: { kind: "cumulative", score: 20000 },
   },
   {
@@ -191,6 +199,9 @@ const TROPHIES: readonly TrophyData[] = [
     name: "NIGHT KNIGHT",
     en: "NIGHT KNIGHT",
     conditionLabel: "累計スコア 50,000点",
+    description:
+      "夜のダイナーを守る、誇り高きバーガー騎士。\nそのフライ返しは、ラストオーダーまで折れない。",
+    lockedDescription: "累計50,000点を達成したスタッフだけが出会える。",
     condition: { kind: "cumulative", score: 50000 },
   },
   {
@@ -198,6 +209,9 @@ const TROPHIES: readonly TrophyData[] = [
     name: "余裕のスマイル",
     en: "EASY SMILE",
     conditionLabel: "EASY 1営業 4,500点",
+    description:
+      "慌てず、こぼさず、最後までにっこり。\n爽やかな営業をやり切った証。",
+    lockedDescription: "EASYで4,500点以上を記録すると獲得できます。",
     condition: { kind: "best", difficulty: "easy", score: 4500 },
   },
   {
@@ -205,6 +219,9 @@ const TROPHIES: readonly TrophyData[] = [
     name: "ピークタイムの主役",
     en: "PEAK TIME STAR",
     conditionLabel: "NORMAL 1営業 5,000点",
+    description:
+      "オーダーベルが鳴り止まない時間こそ、腕の見せどころ。\n店内の熱気を味方につけたスタッフの証。",
+    lockedDescription: "NORMALで5,000点以上を記録すると獲得できます。",
     condition: { kind: "best", difficulty: "normal", score: 5000 },
   },
   {
@@ -212,6 +229,9 @@ const TROPHIES: readonly TrophyData[] = [
     name: "LAST ORDER SURVIVOR",
     en: "LAST ORDER SURVIVOR",
     conditionLabel: "HARD 1営業 3,500点",
+    description:
+      "焦げる鉄板、積み上がる伝票、それでも最後まで立っていた。\n深夜営業を生き抜いた不屈の証。",
+    lockedDescription: "HARDで3,500点以上を記録すると獲得できます。",
     condition: { kind: "best", difficulty: "hard", score: 3500 },
   },
 ] as const;
@@ -977,6 +997,9 @@ export default function MirrorDinerGame() {
   const [earnedTrophies, setEarnedTrophies] = useState<TrophyId[]>([]);
   const [trophyQueue, setTrophyQueue] = useState<TrophyId[]>([]);
   const [trophyShelfOpen, setTrophyShelfOpen] = useState(false);
+  const [selectedTrophyId, setSelectedTrophyId] = useState<TrophyId>(
+    TROPHIES[0].id,
+  );
   const [firstTimeGuide, setFirstTimeGuide] =
     useState<FirstTimeGuide | null>(null);
   const [selectedMission, setSelectedMission] =
@@ -2126,10 +2149,24 @@ export default function MirrorDinerGame() {
     setTrophyQueue((current) => current.slice(1));
   };
 
+  useEffect(() => {
+    if (screen !== "result" || trophyQueue.length === 0) return;
+    const timer = window.setTimeout(dismissTrophy, 2800);
+    return () => window.clearTimeout(timer);
+  }, [screen, trophyQueue]);
+
   const selectedOrderData = orders.find((order) => order.id === selectedOrder);
   const selectedStockItems = selectedStock
     .map((uid) => stock.find((item) => item.uid === uid))
     .filter((item): item is StockItem => Boolean(item));
+  const trophyDisplayData = TROPHIES.map((trophy) => ({
+    ...trophy,
+    unlocked: earnedTrophies.includes(trophy.id),
+  }));
+  const selectedTrophy =
+    trophyDisplayData.find((trophy) => trophy.id === selectedTrophyId) ??
+    trophyDisplayData[0];
+  const selectedTrophyUnlocked = selectedTrophy.unlocked;
 
   const orderAcceptsSelected = (order: Order) => {
     if (
@@ -2678,34 +2715,69 @@ export default function MirrorDinerGame() {
                 <div>
                   <small>MIRROR DINER</small>
                   <h2>TROPHY SHELF</h2>
-                  <p>獲得したフィギュアだけが、ここに飾られます。</p>
+                  <p>目標を選んで、ダイナーの展示ケースをのぞこう。</p>
                 </div>
                 <strong>{earnedTrophies.length} / {TROPHIES.length}</strong>
               </header>
-              <div className="trophy-shelf-grid">
-                {TROPHIES.map((trophy, index) => {
-                  const unlocked = earnedTrophies.includes(trophy.id);
+              <div className="trophy-collection">
+                <section
+                  className={`trophy-display-case${
+                    selectedTrophyUnlocked ? " is-unlocked" : " is-locked"
+                  }`}
+                  aria-live="polite"
+                >
+                  <div className="trophy-display-sign">
+                    <small>FEATURED FIGURINE</small>
+                    <span>{selectedTrophyUnlocked ? "DISPLAYED" : "WANTED"}</span>
+                  </div>
+                  <div className="trophy-display-stage">
+                    <span className="trophy-case-light trophy-case-light-left" aria-hidden="true" />
+                    <span className="trophy-case-light trophy-case-light-right" aria-hidden="true" />
+                    <TrophyFigurine id={selectedTrophy.id} />
+                    <span className="trophy-case-plinth" aria-hidden="true" />
+                  </div>
+                  <div className="trophy-display-copy">
+                    <small>{selectedTrophy.en}</small>
+                    <h3>{selectedTrophy.name}</h3>
+                    <strong>
+                      {selectedTrophyUnlocked ? "獲得済み" : "まだ棚に飾られていません"}
+                    </strong>
+                    <p className="trophy-display-condition">
+                      {selectedTrophy.conditionLabel}
+                    </p>
+                    <p className="trophy-display-description">
+                      {selectedTrophyUnlocked
+                        ? selectedTrophy.description
+                        : selectedTrophy.lockedDescription}
+                    </p>
+                  </div>
+                </section>
+                <div className="trophy-shelf-grid" role="list" aria-label="トロフィー一覧">
+                  {trophyDisplayData.map((trophy) => {
+                  const unlocked = trophy.unlocked;
+                  const selected = selectedTrophy.id === trophy.id;
                   return (
-                    <article
-                      className={unlocked ? "is-unlocked" : "is-empty"}
+                    <button
+                      type="button"
+                      className={`trophy-shelf-item${
+                        unlocked ? " is-unlocked" : " is-locked"
+                      }${selected ? " is-selected" : ""}`}
                       key={trophy.id}
-                      aria-label={
-                        unlocked ? trophy.name : `空いている飾り場所 ${index + 1}`
-                      }
+                      onClick={() => setSelectedTrophyId(trophy.id)}
+                      aria-pressed={selected}
                     >
                       <div className="trophy-shelf-spot">
-                        {unlocked && <TrophyFigurine id={trophy.id} />}
+                        <TrophyFigurine id={trophy.id} />
                       </div>
-                      {unlocked && (
-                        <div>
-                          <small>{trophy.en}</small>
-                          <strong>{trophy.name}</strong>
-                          <span>{trophy.conditionLabel}</span>
-                        </div>
-                      )}
-                    </article>
+                      <div>
+                        <small>{trophy.en}</small>
+                        <strong>{trophy.name}</strong>
+                        <span>{unlocked ? "獲得済み" : trophy.conditionLabel}</span>
+                      </div>
+                    </button>
                   );
                 })}
+                </div>
               </div>
               <dl className="trophy-score-ledger">
                 <div>
@@ -2829,20 +2901,31 @@ export default function MirrorDinerGame() {
           );
           if (!trophy) return null;
           return (
-            <div className="trophy-unlock-overlay" role="dialog" aria-modal="true">
-              <section className="trophy-polaroid">
+            <div
+              className="trophy-unlock-overlay"
+              role="dialog"
+              aria-modal="true"
+              onClick={dismissTrophy}
+            >
+              <section className="trophy-polaroid" onClick={(event) => event.stopPropagation()}>
                 <div className="trophy-polaroid-topline">
-                  <span>NEW TROPHY</span>
+                  <span>NEW TROPHY!</span>
                   <b>★</b>
                 </div>
                 <div className="trophy-photo-window">
+                  <span className="trophy-confetti confetti-one" aria-hidden="true">✦</span>
+                  <span className="trophy-confetti confetti-two" aria-hidden="true">★</span>
+                  <span className="trophy-confetti confetti-three" aria-hidden="true">✦</span>
+                  <span className="trophy-photo-shelf" aria-hidden="true" />
                   <TrophyFigurine id={trophy.id} />
                   <span className="trophy-photo-flash" aria-hidden="true">✦</span>
                 </div>
                 <div className="trophy-polaroid-copy">
                   <small>{trophy.en}</small>
                   <h2>{trophy.name}</h2>
+                  <p className="trophy-polaroid-description">{trophy.description}</p>
                   <p>{trophy.conditionLabel} 達成！</p>
+                  <span>トロフィー棚に飾られました</span>
                 </div>
                 <div className="trophy-polaroid-stamp">
                   MIRROR DINER<br />NIGHT CREW
