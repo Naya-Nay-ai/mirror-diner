@@ -107,6 +107,7 @@ type SaveData = {
   seenRecipes: MenuId[];
   supplyGuidesSeen: Partial<Record<SupplyGuideDifficulty, boolean>>;
   workshopGuideSeen: boolean;
+  normalWorkshopNoticeSeen: boolean;
 };
 type StaffSupplyId = "timeCard" | "smile" | "serviceOvertime";
 type StaffSupplies = Record<StaffSupplyId, number>;
@@ -119,6 +120,10 @@ type FirstTimeGuide =
     }
   | {
       kind: "workshop";
+      index: number;
+    }
+  | {
+      kind: "normalWorkshopNotice";
       index: number;
     };
 type GuideCard = {
@@ -267,6 +272,18 @@ const WORKSHOP_GUIDE: readonly GuideCard[] = [
     speaker: "miu",
     phase: "KITCHEN WORKS",
     text: "こまったところから かいそうしてねっ。きょうは みるだけでも だいじょうぶ！",
+  },
+];
+const NORMAL_WORKSHOP_NOTICE: readonly GuideCard[] = [
+  {
+    speaker: "shu",
+    phase: "KITCHEN GRADE UP",
+    text: "ちゅうぼうの ぐれーどあっぷも できるよ！",
+  },
+  {
+    speaker: "miu",
+    phase: "KITCHEN GRADE UP",
+    text: "したの「ちゅうぼうを かいそうする」から、ぐりどるを ふやせるよ〜！",
   },
 ];
 const SMILE_RECOVERY_MS = 8000;
@@ -847,6 +864,8 @@ export default function MirrorDinerGame() {
     Partial<Record<SupplyGuideDifficulty, boolean>>
   >({});
   const [workshopGuideSeen, setWorkshopGuideSeen] = useState(false);
+  const [normalWorkshopNoticeSeen, setNormalWorkshopNoticeSeen] =
+    useState(false);
   const [firstTimeGuide, setFirstTimeGuide] =
     useState<FirstTimeGuide | null>(null);
   const [selectedMission, setSelectedMission] =
@@ -883,6 +902,7 @@ export default function MirrorDinerGame() {
   const supplyGuidesSeenRef = useRef<
     Partial<Record<SupplyGuideDifficulty, boolean>>
   >({});
+  const normalWorkshopNoticeSeenRef = useRef(false);
   const startAtRef = useRef(0);
   const shiftDurationRef = useRef(GAME_SECONDS);
   const nextOrderAtRef = useRef(0);
@@ -982,6 +1002,12 @@ export default function MirrorDinerGame() {
             setSupplyGuidesSeen(loadedSupplyGuides);
           }
           setWorkshopGuideSeen(Boolean(saved.workshopGuideSeen));
+          normalWorkshopNoticeSeenRef.current = Boolean(
+            saved.normalWorkshopNoticeSeen,
+          );
+          setNormalWorkshopNoticeSeen(
+            Boolean(saved.normalWorkshopNoticeSeen),
+          );
         }
       } catch {
         window.localStorage.removeItem(SAVE_KEY);
@@ -1005,6 +1031,7 @@ export default function MirrorDinerGame() {
         seenRecipes,
         supplyGuidesSeen,
         workshopGuideSeen,
+        normalWorkshopNoticeSeen,
       } satisfies SaveData),
     );
   }, [
@@ -1017,6 +1044,7 @@ export default function MirrorDinerGame() {
     tips,
     upgrades,
     workshopGuideSeen,
+    normalWorkshopNoticeSeen,
   ]);
 
   useEffect(() => {
@@ -1332,6 +1360,14 @@ export default function MirrorDinerGame() {
         setEarnedTips(reward);
         setTips((value) => value + reward);
         playSound("end");
+        if (
+          difficulty === "normal" &&
+          !normalWorkshopNoticeSeenRef.current
+        ) {
+          normalWorkshopNoticeSeenRef.current = true;
+          setNormalWorkshopNoticeSeen(true);
+          setFirstTimeGuide({ kind: "normalWorkshopNotice", index: 0 });
+        }
         setScreen("result");
       }
     }, 100);
@@ -2006,7 +2042,9 @@ export default function MirrorDinerGame() {
     const cards =
       firstTimeGuide.kind === "supplies"
         ? SUPPLY_GUIDES[firstTimeGuide.difficulty].cards
-        : WORKSHOP_GUIDE;
+        : firstTimeGuide.kind === "workshop"
+          ? WORKSHOP_GUIDE
+          : NORMAL_WORKSHOP_NOTICE;
     if (firstTimeGuide.index >= cards.length - 1) {
       setFirstTimeGuide(null);
       return;
@@ -2522,6 +2560,38 @@ export default function MirrorDinerGame() {
             タイトルへ戻る
           </button>
         </div>
+        {firstTimeGuide &&
+          firstTimeGuide.kind === "normalWorkshopNotice" &&
+          (() => {
+            const card = NORMAL_WORKSHOP_NOTICE[firstTimeGuide.index];
+            const isLast =
+              firstTimeGuide.index === NORMAL_WORKSHOP_NOTICE.length - 1;
+            return (
+              <div
+                className="first-guide-overlay"
+                role="dialog"
+                aria-modal="true"
+              >
+                <section className={`first-guide-card guide-${card.speaker}`}>
+                  <div className="first-guide-portrait" aria-hidden="true">
+                    <img
+                      src={`/customers/${card.speaker}.svg`}
+                      alt=""
+                      draggable={false}
+                    />
+                  </div>
+                  <div className="first-guide-copy">
+                    <small>{card.phase}</small>
+                    <strong>{card.speaker === "shu" ? "しゅ" : "みう"}</strong>
+                    <p>{card.text}</p>
+                  </div>
+                  <button onClick={advanceFirstTimeGuide}>
+                    {isLast ? "わかった！" : "つぎへ"}
+                  </button>
+                </section>
+              </div>
+            );
+          })()}
       </main>
     );
   }
