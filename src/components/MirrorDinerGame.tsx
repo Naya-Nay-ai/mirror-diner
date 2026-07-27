@@ -97,6 +97,24 @@ type Stats = {
   waste: number;
   maxCombo: number;
 };
+type TrophyId =
+  | "promisingRookie"
+  | "midnightAce"
+  | "nightKnight"
+  | "easySmile"
+  | "peakTimeStar"
+  | "lastOrderSurvivor";
+type BestScores = Record<DifficultyId, number>;
+type TrophyCondition =
+  | { kind: "cumulative"; score: number }
+  | { kind: "best"; difficulty: DifficultyId; score: number };
+type TrophyData = {
+  id: TrophyId;
+  name: string;
+  en: string;
+  conditionLabel: string;
+  condition: TrophyCondition;
+};
 
 type SaveData = {
   tips: number;
@@ -108,6 +126,9 @@ type SaveData = {
   supplyGuidesSeen: Partial<Record<SupplyGuideDifficulty, boolean>>;
   workshopGuideSeen: boolean;
   normalWorkshopNoticeSeen: boolean;
+  cumulativeScore: number;
+  bestScores: BestScores;
+  earnedTrophies: TrophyId[];
 };
 type StaffSupplyId = "timeCard" | "smile" | "serviceOvertime";
 type StaffSupplies = Record<StaffSupplyId, number>;
@@ -144,6 +165,67 @@ type MissionData = {
 };
 
 const SAVE_KEY = "mirror-diner-save-v2";
+const DEFAULT_BEST_SCORES: BestScores = {
+  easy: 0,
+  normal: 0,
+  hard: 0,
+  extra: 0,
+};
+const TROPHIES: readonly TrophyData[] = [
+  {
+    id: "promisingRookie",
+    name: "期待の新人",
+    en: "PROMISING ROOKIE",
+    conditionLabel: "累計スコア 5,000点",
+    condition: { kind: "cumulative", score: 5000 },
+  },
+  {
+    id: "midnightAce",
+    name: "深夜シフトのエース",
+    en: "MIDNIGHT SHIFT ACE",
+    conditionLabel: "累計スコア 20,000点",
+    condition: { kind: "cumulative", score: 20000 },
+  },
+  {
+    id: "nightKnight",
+    name: "NIGHT KNIGHT",
+    en: "NIGHT KNIGHT",
+    conditionLabel: "累計スコア 50,000点",
+    condition: { kind: "cumulative", score: 50000 },
+  },
+  {
+    id: "easySmile",
+    name: "余裕のスマイル",
+    en: "EASY SMILE",
+    conditionLabel: "EASY 1営業 4,500点",
+    condition: { kind: "best", difficulty: "easy", score: 4500 },
+  },
+  {
+    id: "peakTimeStar",
+    name: "ピークタイムの主役",
+    en: "PEAK TIME STAR",
+    conditionLabel: "NORMAL 1営業 5,000点",
+    condition: { kind: "best", difficulty: "normal", score: 5000 },
+  },
+  {
+    id: "lastOrderSurvivor",
+    name: "LAST ORDER SURVIVOR",
+    en: "LAST ORDER SURVIVOR",
+    conditionLabel: "HARD 1営業 3,500点",
+    condition: { kind: "best", difficulty: "hard", score: 3500 },
+  },
+] as const;
+const TROPHY_IDS = new Set<TrophyId>(TROPHIES.map((trophy) => trophy.id));
+const isTrophyId = (value: unknown): value is TrophyId =>
+  typeof value === "string" && TROPHY_IDS.has(value as TrophyId);
+const trophyIsUnlocked = (
+  trophy: TrophyData,
+  cumulativeScore: number,
+  bestScores: BestScores,
+) =>
+  trophy.condition.kind === "cumulative"
+    ? cumulativeScore >= trophy.condition.score
+    : bestScores[trophy.condition.difficulty] >= trophy.condition.score;
 const STAFF_SUPPLY_MAX = 10;
 const SERVICE_OVERTIME_SECONDS = 30;
 const STAFF_SUPPLY_DATA: Record<
@@ -668,6 +750,14 @@ const emptyStats: Stats = {
   waste: 0,
   maxCombo: 0,
 };
+const calculateFinalScore = (rawScore: number, stats: Stats) =>
+  Math.max(
+    0,
+    rawScore +
+      stats.servedOrders * 100 +
+      stats.maxCombo * 25 -
+      stats.mistakes * 30,
+  );
 
 function FoodIcon({
   id,
@@ -692,6 +782,21 @@ function FoodIcon({
         <i className="food-d" />
       </span>
     </span>
+  );
+}
+
+function TrophyFigurine({
+  id,
+  small = false,
+}: {
+  id: TrophyId;
+  small?: boolean;
+}) {
+  return (
+    <span
+      className={`trophy-figurine trophy-${id}${small ? " is-small" : ""}`}
+      aria-hidden="true"
+    />
   );
 }
 
@@ -866,6 +971,12 @@ export default function MirrorDinerGame() {
   const [workshopGuideSeen, setWorkshopGuideSeen] = useState(false);
   const [normalWorkshopNoticeSeen, setNormalWorkshopNoticeSeen] =
     useState(false);
+  const [cumulativeScore, setCumulativeScore] = useState(0);
+  const [bestScores, setBestScores] =
+    useState<BestScores>(DEFAULT_BEST_SCORES);
+  const [earnedTrophies, setEarnedTrophies] = useState<TrophyId[]>([]);
+  const [trophyQueue, setTrophyQueue] = useState<TrophyId[]>([]);
+  const [trophyShelfOpen, setTrophyShelfOpen] = useState(false);
   const [firstTimeGuide, setFirstTimeGuide] =
     useState<FirstTimeGuide | null>(null);
   const [selectedMission, setSelectedMission] =
@@ -903,6 +1014,10 @@ export default function MirrorDinerGame() {
     Partial<Record<SupplyGuideDifficulty, boolean>>
   >({});
   const normalWorkshopNoticeSeenRef = useRef(false);
+  const cumulativeScoreRef = useRef(0);
+  const bestScoresRef = useRef<BestScores>(DEFAULT_BEST_SCORES);
+  const earnedTrophiesRef = useRef<TrophyId[]>([]);
+  const trophiesEvaluatedRef = useRef(false);
   const startAtRef = useRef(0);
   const shiftDurationRef = useRef(GAME_SECONDS);
   const nextOrderAtRef = useRef(0);
@@ -1008,6 +1123,33 @@ export default function MirrorDinerGame() {
           setNormalWorkshopNoticeSeen(
             Boolean(saved.normalWorkshopNoticeSeen),
           );
+          const loadedCumulativeScore =
+            typeof saved.cumulativeScore === "number" &&
+            Number.isFinite(saved.cumulativeScore)
+              ? Math.max(0, Math.round(saved.cumulativeScore))
+              : 0;
+          const loadedBestScores = (
+            Object.keys(DEFAULT_BEST_SCORES) as DifficultyId[]
+          ).reduce<BestScores>(
+            (scores, id) => {
+              const savedScore = saved.bestScores?.[id];
+              scores[id] =
+                typeof savedScore === "number" && Number.isFinite(savedScore)
+                  ? Math.max(0, Math.round(savedScore))
+                  : 0;
+              return scores;
+            },
+            { ...DEFAULT_BEST_SCORES },
+          );
+          const loadedTrophies = Array.isArray(saved.earnedTrophies)
+            ? Array.from(new Set(saved.earnedTrophies.filter(isTrophyId)))
+            : [];
+          cumulativeScoreRef.current = loadedCumulativeScore;
+          bestScoresRef.current = loadedBestScores;
+          earnedTrophiesRef.current = loadedTrophies;
+          setCumulativeScore(loadedCumulativeScore);
+          setBestScores(loadedBestScores);
+          setEarnedTrophies(loadedTrophies);
         }
       } catch {
         window.localStorage.removeItem(SAVE_KEY);
@@ -1032,10 +1174,16 @@ export default function MirrorDinerGame() {
         supplyGuidesSeen,
         workshopGuideSeen,
         normalWorkshopNoticeSeen,
+        cumulativeScore,
+        bestScores,
+        earnedTrophies,
       } satisfies SaveData),
     );
   }, [
+    bestScores,
+    cumulativeScore,
     difficulty,
+    earnedTrophies,
     saveLoaded,
     seenRecipes,
     selectedMission,
@@ -1105,13 +1253,16 @@ export default function MirrorDinerGame() {
       const usedCustomers = new Set(
         ordersRef.current.map((order) => order.customer),
       );
+      Object.values(customerReactionsRef.current).forEach((reaction) => {
+        if (reaction && reaction.until > time) {
+          usedCustomers.add(reaction.customer);
+        }
+      });
       const availableCustomers = CUSTOMERS.map((_, index) => index).filter(
         (index) => !usedCustomers.has(index),
       );
-      const customerPool =
-        availableCustomers.length > 0
-          ? availableCustomers
-          : CUSTOMERS.map((_, index) => index);
+      if (availableCustomers.length === 0) return;
+      const customerPool = availableCustomers;
       const totalWeight = customerPool.reduce(
         (sum, index) => sum + CUSTOMERS[index].weight,
         0,
@@ -1162,6 +1313,7 @@ export default function MirrorDinerGame() {
     shiftDurationRef.current = GAME_SECONDS;
     nextOrderAtRef.current = 0;
     finishedRef.current = false;
+    trophiesEvaluatedRef.current = false;
     uidRef.current = 1;
     setRemaining(GAME_SECONDS);
     setScore(0);
@@ -1188,6 +1340,7 @@ export default function MirrorDinerGame() {
     setUsedServiceOvertime(false);
     setRecipeBookOpen(false);
     setTrainingStep(null);
+    setTrophyQueue([]);
     recipePausedAtRef.current = 0;
     normalFeaturedIndexRef.current = 0;
     if (difficulty !== "easy" && !supplyGuidesSeenRef.current[difficulty]) {
@@ -1929,10 +2082,49 @@ export default function MirrorDinerGame() {
     }
   };
 
-  const finalScore = Math.max(
-    0,
-    score + stats.servedOrders * 100 + stats.maxCombo * 25 - stats.mistakes * 30,
-  );
+  const finalScore = calculateFinalScore(score, stats);
+
+  useEffect(() => {
+    if (
+      screen !== "result" ||
+      !saveLoaded ||
+      trophiesEvaluatedRef.current
+    ) {
+      return;
+    }
+    trophiesEvaluatedRef.current = true;
+
+    const nextCumulativeScore = cumulativeScoreRef.current + finalScore;
+    const nextBestScores: BestScores = {
+      ...bestScoresRef.current,
+      [difficulty]: Math.max(bestScoresRef.current[difficulty], finalScore),
+    };
+    const alreadyEarned = new Set(earnedTrophiesRef.current);
+    const newlyEarned = TROPHIES.filter(
+      (trophy) =>
+        !alreadyEarned.has(trophy.id) &&
+        trophyIsUnlocked(trophy, nextCumulativeScore, nextBestScores),
+    ).map((trophy) => trophy.id);
+    const nextEarnedSet = new Set([
+      ...earnedTrophiesRef.current,
+      ...newlyEarned,
+    ]);
+    const nextEarnedTrophies = TROPHIES.filter((trophy) =>
+      nextEarnedSet.has(trophy.id),
+    ).map((trophy) => trophy.id);
+
+    cumulativeScoreRef.current = nextCumulativeScore;
+    bestScoresRef.current = nextBestScores;
+    earnedTrophiesRef.current = nextEarnedTrophies;
+    setCumulativeScore(nextCumulativeScore);
+    setBestScores(nextBestScores);
+    setEarnedTrophies(nextEarnedTrophies);
+    setTrophyQueue(newlyEarned);
+  }, [difficulty, finalScore, saveLoaded, screen]);
+
+  const dismissTrophy = () => {
+    setTrophyQueue((current) => current.slice(1));
+  };
 
   const selectedOrderData = orders.find((order) => order.id === selectedOrder);
   const selectedStockItems = selectedStock
@@ -2353,6 +2545,26 @@ export default function MirrorDinerGame() {
               <span className="staff-bag-icon" aria-hidden="true">+</span>
               <span>スタッフ用品</span>
             </button>
+            {earnedTrophies.length > 0 && (
+              <button
+                className="trophy-shelf-button"
+                onClick={() => setTrophyShelfOpen(true)}
+              >
+                <span className="trophy-shelf-mini" aria-hidden="true">
+                  {TROPHIES.map((trophy) => (
+                    <i key={trophy.id}>
+                      {earnedTrophies.includes(trophy.id) && (
+                        <TrophyFigurine id={trophy.id} small />
+                      )}
+                    </i>
+                  ))}
+                </span>
+                <span>
+                  <small>TROPHY SHELF</small>
+                  トロフィー {earnedTrophies.length} / {TROPHIES.length}
+                </span>
+              </button>
+            )}
             <span>TIP {tips}</span>
           </div>
         </section>
@@ -2465,6 +2677,63 @@ export default function MirrorDinerGame() {
             </section>
           </div>
         )}
+        {trophyShelfOpen && (
+          <div className="trophy-shelf-overlay" role="dialog" aria-modal="true">
+            <section className="trophy-shelf-board">
+              <header>
+                <div>
+                  <small>MIRROR DINER</small>
+                  <h2>TROPHY SHELF</h2>
+                  <p>獲得したフィギュアだけが、ここに飾られます。</p>
+                </div>
+                <strong>{earnedTrophies.length} / {TROPHIES.length}</strong>
+              </header>
+              <div className="trophy-shelf-grid">
+                {TROPHIES.map((trophy, index) => {
+                  const unlocked = earnedTrophies.includes(trophy.id);
+                  return (
+                    <article
+                      className={unlocked ? "is-unlocked" : "is-empty"}
+                      key={trophy.id}
+                      aria-label={
+                        unlocked ? trophy.name : `空いている飾り場所 ${index + 1}`
+                      }
+                    >
+                      <div className="trophy-shelf-spot">
+                        {unlocked && <TrophyFigurine id={trophy.id} />}
+                      </div>
+                      {unlocked && (
+                        <div>
+                          <small>{trophy.en}</small>
+                          <strong>{trophy.name}</strong>
+                          <span>{trophy.conditionLabel}</span>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+              <dl className="trophy-score-ledger">
+                <div>
+                  <dt>累計</dt>
+                  <dd>{cumulativeScore.toLocaleString()} SCORE</dd>
+                </div>
+                {(Object.keys(DEFAULT_BEST_SCORES) as DifficultyId[]).map((id) => (
+                  <div key={id}>
+                    <dt>{DIFFICULTIES[id].en}</dt>
+                    <dd>{bestScores[id].toLocaleString()}</dd>
+                  </div>
+                ))}
+              </dl>
+              <button
+                className="trophy-shelf-close"
+                onClick={() => setTrophyShelfOpen(false)}
+              >
+                棚を閉じる
+              </button>
+            </section>
+          </div>
+        )}
         {firstTimeGuide && firstTimeGuide.kind === "workshop" && (() => {
           const card = WORKSHOP_GUIDE[firstTimeGuide.index];
           const isLast = firstTimeGuide.index === WORKSHOP_GUIDE.length - 1;
@@ -2560,7 +2829,41 @@ export default function MirrorDinerGame() {
             タイトルへ戻る
           </button>
         </div>
+        {trophyQueue.length > 0 && (() => {
+          const trophy = TROPHIES.find(
+            (entry) => entry.id === trophyQueue[0],
+          );
+          if (!trophy) return null;
+          return (
+            <div className="trophy-unlock-overlay" role="dialog" aria-modal="true">
+              <section className="trophy-polaroid">
+                <div className="trophy-polaroid-topline">
+                  <span>NEW TROPHY</span>
+                  <b>★</b>
+                </div>
+                <div className="trophy-photo-window">
+                  <TrophyFigurine id={trophy.id} />
+                  <span className="trophy-photo-flash" aria-hidden="true">✦</span>
+                </div>
+                <div className="trophy-polaroid-copy">
+                  <small>{trophy.en}</small>
+                  <h2>{trophy.name}</h2>
+                  <p>{trophy.conditionLabel} 達成！</p>
+                </div>
+                <div className="trophy-polaroid-stamp">
+                  MIRROR DINER<br />NIGHT CREW
+                </div>
+                <button onClick={dismissTrophy}>
+                  {trophyQueue.length > 1
+                    ? "つぎのトロフィーを見る"
+                    : "飾り棚へしまう"}
+                </button>
+              </section>
+            </div>
+          );
+        })()}
         {firstTimeGuide &&
+          trophyQueue.length === 0 &&
           firstTimeGuide.kind === "normalWorkshopNotice" &&
           (() => {
             const card = NORMAL_WORKSHOP_NOTICE[firstTimeGuide.index];
