@@ -5951,6 +5951,122 @@ button:focus-visible {
   letter-spacing: 0.13em;
 }
 
+.title-door-column {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
+.title-trophy-button {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 9px;
+  border: 3px solid #5c4634;
+  background: #c79b4f;
+  box-shadow:
+    inset 2px 2px #f4d784,
+    inset -2px -2px #78542b,
+    3px 3px 0 rgba(0, 0, 0, 0.34);
+  color: #3f281f;
+  font-family: "Arial Narrow", "Noto Sans JP", system-ui, sans-serif;
+  font-size: 0.59rem;
+  font-weight: 900;
+  line-height: 1.15;
+  cursor: pointer;
+}
+
+.title-trophy-button:hover,
+.title-trophy-button:focus-visible {
+  background: #dbb660;
+}
+
+.title-trophy-button:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 2px 2px #78542b,
+    inset -2px -2px #f4d784,
+    1px 1px 0 rgba(0, 0, 0, 0.34);
+}
+
+.title-trophy-button > span:last-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  white-space: nowrap;
+}
+
+.title-trophy-button small {
+  color: #6d2a30;
+  font-family: ui-monospace, "Courier New", monospace;
+  font-size: 0.42rem;
+  letter-spacing: 0.07em;
+}
+
+.trophy-cup-icon {
+  position: relative;
+  display: block;
+  flex: 0 0 29px;
+  width: 29px;
+  height: 28px;
+}
+
+.trophy-cup-icon::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 5px;
+  top: 1px;
+  width: 19px;
+  height: 15px;
+  border: 2px solid #5d3b26;
+  background: linear-gradient(90deg, #d38b24, #ffe58b 46%, #bf701c);
+  clip-path: polygon(0 0, 100% 0, 82% 100%, 18% 100%);
+  box-shadow: inset 2px 1px rgba(255, 255, 239, 0.54);
+}
+
+.trophy-cup-icon::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  bottom: 1px;
+  width: 15px;
+  height: 8px;
+  border: 2px solid #5d3b26;
+  border-top: 0;
+  background: linear-gradient(#e3a036 0 43%, #795035 44% 62%, #e3a036 63%);
+}
+
+.trophy-cup-icon i,
+.trophy-cup-icon i::after {
+  position: absolute;
+  display: block;
+  box-sizing: border-box;
+  width: 7px;
+  height: 10px;
+  border: 2px solid #5d3b26;
+  border-right: 0;
+  border-radius: 7px 0 0 7px;
+  content: "";
+}
+
+.trophy-cup-icon i {
+  left: 0;
+  top: 4px;
+}
+
+.trophy-cup-icon i::after {
+  left: 18px;
+  top: -2px;
+  border-right: 2px solid #5d3b26;
+  border-left: 0;
+  border-radius: 0 7px 7px 0;
+}
+
 .title-control-deck .title-utility {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -6113,7 +6229,7 @@ button:focus-visible {
     grid-column: 1;
   }
 
-  .title-door-hint {
+  .title-door-column {
     grid-column: 2;
     grid-row: 1;
   }
@@ -6180,8 +6296,12 @@ button:focus-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .title-door-hint {
+  .title-door-column {
     width: min(100%, 320px);
+  }
+
+  .title-door-hint {
+    width: 100%;
     min-height: 52px;
     padding: 7px 3px;
   }
@@ -6934,89 +7054,6 @@ button:focus-visible {
   background-position: 100% 78%;
 }
 
-.title-control-deck .title-utility:has(.trophy-shelf-button) {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.title-control-deck
-  .title-utility:has(.trophy-shelf-button)
-  .workshop-button {
-  grid-column: 1 / -1;
-}
-
-.title-control-deck
-  .title-utility:has(.trophy-shelf-button)
-  > span {
-  grid-column: 1 / -1;
-}
-
-.title-control-deck .title-utility .trophy-shelf-button {
-  display: flex;
-  min-width: 0;
-  min-height: 44px;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 5px 6px;
-  border: 3px solid #5c4634;
-  background: #c79b4f;
-  box-shadow:
-    inset 2px 2px #f4d784,
-    inset -2px -2px #78542b,
-    3px 3px 0 rgba(0, 0, 0, 0.34);
-  color: #3f281f;
-  font-family: "Arial Narrow", "Noto Sans JP", system-ui, sans-serif;
-  font-size: 0.54rem;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.title-control-deck .title-utility .trophy-shelf-button > span:last-child {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
-.title-control-deck .title-utility .trophy-shelf-button small {
-  color: #6d2a30;
-  font-size: 0.39rem;
-  letter-spacing: 0.05em;
-}
-
-.trophy-shelf-mini {
-  display: grid;
-  width: 54px;
-  height: 28px;
-  flex: 0 0 54px;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px 2px;
-  padding: 2px 3px;
-  border: 2px solid #51382a;
-  background:
-    linear-gradient(#775136 0 47%, #3d2a21 48% 55%, #775136 56%),
-    #775136;
-  box-shadow: inset 1px 1px #aa7a4e;
-}
-
-.trophy-shelf-mini i {
-  position: relative;
-  display: block;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  border-bottom: 2px solid #d4a960;
-  background: rgba(34, 22, 18, 0.42);
-}
-
-.trophy-shelf-mini .trophy-figurine {
-  position: absolute;
-  inset: -1px 0 0;
-}
 
 .trophy-shelf-overlay,
 .trophy-unlock-overlay {
@@ -7354,18 +7391,6 @@ button:focus-visible {
 }
 
 @media (max-width: 640px), (max-aspect-ratio: 4 / 5) {
-  .title-control-deck
-    .title-utility:has(.trophy-shelf-button)
-    .workshop-button,
-  .title-control-deck
-    .title-utility:has(.trophy-shelf-button)
-    .staff-store-button,
-  .title-control-deck
-    .title-utility:has(.trophy-shelf-button)
-    .trophy-shelf-button {
-    min-height: 42px;
-  }
-
   .trophy-shelf-board {
     padding: 11px;
   }
