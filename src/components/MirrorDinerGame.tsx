@@ -2522,10 +2522,24 @@ export default function MirrorDinerGame() {
               </div>
             )}
           </div>
-          <p className="title-door-hint">
-            <span>WHEN YOU&apos;RE READY</span>
-            <strong>PUSH THE DOOR TO START</strong>
-          </p>
+          <div className="title-door-column">
+            <p className="title-door-hint">
+              <span>WHEN YOU&apos;RE READY</span>
+              <strong>PUSH THE DOOR TO START</strong>
+            </p>
+            {earnedTrophies.length > 0 && (
+              <button
+                className="title-trophy-button"
+                onClick={() => setTrophyShelfOpen(true)}
+              >
+                <span className="trophy-cup-icon" aria-hidden="true"><i /></span>
+                <span>
+                  <small>TROPHY SHELF</small>
+                  トロフィー {earnedTrophies.length} / {TROPHIES.length}
+                </span>
+              </button>
+            )}
+          </div>
           <div className="title-utility">
             <button
               className="workshop-button"
@@ -2545,26 +2559,6 @@ export default function MirrorDinerGame() {
               <span className="staff-bag-icon" aria-hidden="true">+</span>
               <span>スタッフ用品</span>
             </button>
-            {earnedTrophies.length > 0 && (
-              <button
-                className="trophy-shelf-button"
-                onClick={() => setTrophyShelfOpen(true)}
-              >
-                <span className="trophy-shelf-mini" aria-hidden="true">
-                  {TROPHIES.map((trophy) => (
-                    <i key={trophy.id}>
-                      {earnedTrophies.includes(trophy.id) && (
-                        <TrophyFigurine id={trophy.id} small />
-                      )}
-                    </i>
-                  ))}
-                </span>
-                <span>
-                  <small>TROPHY SHELF</small>
-                  トロフィー {earnedTrophies.length} / {TROPHIES.length}
-                </span>
-              </button>
-            )}
             <span>TIP {tips}</span>
           </div>
         </section>
