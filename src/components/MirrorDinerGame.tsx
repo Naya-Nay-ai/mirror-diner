@@ -2169,12 +2169,6 @@ export default function MirrorDinerGame() {
     setTrophyQueue((current) => current.slice(1));
   };
 
-  useEffect(() => {
-    if (screen !== "result" || trophyQueue.length === 0) return;
-    const timer = window.setTimeout(dismissTrophy, 2800);
-    return () => window.clearTimeout(timer);
-  }, [screen, trophyQueue]);
-
   const selectedOrderData = orders.find((order) => order.id === selectedOrder);
   const selectedStockItems = selectedStock
     .map((uid) => stock.find((item) => item.uid === uid))
@@ -2927,9 +2921,10 @@ export default function MirrorDinerGame() {
               className="trophy-unlock-overlay"
               role="dialog"
               aria-modal="true"
+              aria-label={`${trophy.name}を獲得しました`}
               onClick={dismissTrophy}
             >
-              <section className="trophy-polaroid" onClick={(event) => event.stopPropagation()}>
+              <section className="trophy-polaroid">
                 <div className="trophy-polaroid-topline">
                   <span>NEW TROPHY!</span>
                   <b>★</b>
@@ -2949,13 +2944,23 @@ export default function MirrorDinerGame() {
                   <p>{trophy.conditionLabel} 達成！</p>
                   <span>トロフィー棚に飾られました</span>
                 </div>
+                <div className="trophy-announcement">
+                  <div className="trophy-announcement-friends" aria-hidden="true">
+                    <img src="/customers/shu.svg" alt="" draggable={false} />
+                    <img src="/customers/miu.svg" alt="" draggable={false} />
+                  </div>
+                  <div className="trophy-announcement-copy">
+                    <p><strong>しゅ</strong>「トロフィー はっけんだよ〜！」</p>
+                    <p><strong>みう</strong>「やったねっ！ かざりだなに かざろう！」</p>
+                  </div>
+                </div>
                 <div className="trophy-polaroid-stamp">
                   MIRROR DINER<br />NIGHT CREW
                 </div>
-                <button onClick={dismissTrophy}>
+                <button>
                   {trophyQueue.length > 1
-                    ? "つぎのトロフィーを見る"
-                    : "飾り棚へしまう"}
+                    ? "タップして、つぎのトロフィーへ"
+                    : "タップして、飾り棚へしまう"}
                 </button>
               </section>
             </div>
