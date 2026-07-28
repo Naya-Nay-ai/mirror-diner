@@ -7563,10 +7563,61 @@ button:focus-visible {
   font-weight: 900;
 }
 
+.trophy-announcement {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 5px 11px;
+  padding: 7px 9px 7px 5px;
+  border: 2px dashed #b88755;
+  border-radius: 8px;
+  background: rgba(255, 249, 221, 0.82);
+  color: #563b30;
+}
+
+.trophy-announcement-friends {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-end;
+}
+
+.trophy-announcement-friends img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  filter: drop-shadow(1px 2px 0 rgba(83, 51, 38, 0.24));
+}
+
+.trophy-announcement-friends img + img {
+  margin-left: -13px;
+}
+
+.trophy-announcement-copy {
+  min-width: 0;
+  text-align: left;
+}
+
+.trophy-announcement-copy p {
+  margin: 0;
+  font-size: 0.55rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.trophy-announcement-copy strong {
+  color: #8f2632;
+}
+
+.trophy-announcement-copy p + p strong {
+  color: #3f817d;
+}
+
 .trophy-polaroid-stamp {
   position: absolute;
   right: 18px;
-  bottom: 72px;
+  bottom: 119px;
   padding: 4px 6px;
   border: 2px solid rgba(125, 42, 48, 0.62);
   color: rgba(125, 42, 48, 0.72);
