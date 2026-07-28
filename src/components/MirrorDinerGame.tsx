@@ -173,7 +173,7 @@ const DEFAULT_BEST_SCORES: BestScores = {
   hard: 0,
   extra: 0,
 };
-const TROPHIES: readonly TrophyData[] = [
+export const TROPHIES: readonly TrophyData[] = [
   {
     id: "promisingRookie",
     name: "期待の新人",
@@ -238,7 +238,7 @@ const TROPHIES: readonly TrophyData[] = [
 const TROPHY_IDS = new Set<TrophyId>(TROPHIES.map((trophy) => trophy.id));
 const isTrophyId = (value: unknown): value is TrophyId =>
   typeof value === "string" && TROPHY_IDS.has(value as TrophyId);
-const trophyIsUnlocked = (
+export const trophyIsUnlocked = (
   trophy: TrophyData,
   cumulativeScore: number,
   bestScores: BestScores,
@@ -246,6 +246,18 @@ const trophyIsUnlocked = (
   trophy.condition.kind === "cumulative"
     ? cumulativeScore >= trophy.condition.score
     : bestScores[trophy.condition.difficulty] >= trophy.condition.score;
+export const resolveEarnedTrophies = (
+  earnedTrophies: readonly TrophyId[],
+  cumulativeScore: number,
+  bestScores: BestScores,
+) => {
+  const earnedSet = new Set(earnedTrophies);
+  return TROPHIES.filter(
+    (trophy) =>
+      earnedSet.has(trophy.id) ||
+      trophyIsUnlocked(trophy, cumulativeScore, bestScores),
+  ).map((trophy) => trophy.id);
+};
 const STAFF_SUPPLY_MAX = 10;
 const SERVICE_OVERTIME_SECONDS = 30;
 const STAFF_SUPPLY_DATA: Record<
@@ -1167,12 +1179,17 @@ export default function MirrorDinerGame() {
           const loadedTrophies = Array.isArray(saved.earnedTrophies)
             ? Array.from(new Set(saved.earnedTrophies.filter(isTrophyId)))
             : [];
+          const resolvedTrophies = resolveEarnedTrophies(
+            loadedTrophies,
+            loadedCumulativeScore,
+            loadedBestScores,
+          );
           cumulativeScoreRef.current = loadedCumulativeScore;
           bestScoresRef.current = loadedBestScores;
-          earnedTrophiesRef.current = loadedTrophies;
+          earnedTrophiesRef.current = resolvedTrophies;
           setCumulativeScore(loadedCumulativeScore);
           setBestScores(loadedBestScores);
-          setEarnedTrophies(loadedTrophies);
+          setEarnedTrophies(resolvedTrophies);
         }
       } catch {
         window.localStorage.removeItem(SAVE_KEY);
@@ -2122,19 +2139,22 @@ export default function MirrorDinerGame() {
       ...bestScoresRef.current,
       [difficulty]: Math.max(bestScoresRef.current[difficulty], finalScore),
     };
-    const alreadyEarned = new Set(earnedTrophiesRef.current);
+    const previouslyEarned = resolveEarnedTrophies(
+      earnedTrophiesRef.current,
+      cumulativeScoreRef.current,
+      bestScoresRef.current,
+    );
+    const alreadyEarned = new Set(previouslyEarned);
     const newlyEarned = TROPHIES.filter(
       (trophy) =>
         !alreadyEarned.has(trophy.id) &&
         trophyIsUnlocked(trophy, nextCumulativeScore, nextBestScores),
     ).map((trophy) => trophy.id);
-    const nextEarnedSet = new Set([
-      ...earnedTrophiesRef.current,
-      ...newlyEarned,
-    ]);
-    const nextEarnedTrophies = TROPHIES.filter((trophy) =>
-      nextEarnedSet.has(trophy.id),
-    ).map((trophy) => trophy.id);
+    const nextEarnedTrophies = resolveEarnedTrophies(
+      [...previouslyEarned, ...newlyEarned],
+      nextCumulativeScore,
+      nextBestScores,
+    );
 
     cumulativeScoreRef.current = nextCumulativeScore;
     bestScoresRef.current = nextBestScores;
@@ -2161,7 +2181,9 @@ export default function MirrorDinerGame() {
     .filter((item): item is StockItem => Boolean(item));
   const trophyDisplayData = TROPHIES.map((trophy) => ({
     ...trophy,
-    unlocked: earnedTrophies.includes(trophy.id),
+    unlocked:
+      earnedTrophies.includes(trophy.id) ||
+      trophyIsUnlocked(trophy, cumulativeScore, bestScores),
   }));
   const selectedTrophy =
     trophyDisplayData.find((trophy) => trophy.id === selectedTrophyId) ??
